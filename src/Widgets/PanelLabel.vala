@@ -27,7 +27,7 @@ namespace DateTimeIndicator {
         public bool clock_show_seconds { get; set; }
         public bool clock_show_weekday { get; set; }
 
-        construct {
+        public PanelLabel (GLib.Settings settings) {
             date_label = new Gtk.Label (null);
             date_label.margin_end = 12;
 
@@ -41,11 +41,11 @@ namespace DateTimeIndicator {
             add (date_revealer);
             add (time_label);
 
-            var clock_settings = new GLib.Settings ("io.elementary.desktop.wingpanel.datetime");
-            clock_settings.bind ("clock-format", this, "clock-format", SettingsBindFlags.DEFAULT);
-            clock_settings.bind ("clock-show-seconds", this, "clock-show-seconds", SettingsBindFlags.DEFAULT);
-            clock_settings.bind ("clock-show-date", date_revealer, "reveal_child", SettingsBindFlags.DEFAULT);
-            clock_settings.bind ("clock-show-weekday", this, "clock-show-weekday", SettingsBindFlags.DEFAULT);
+            // var clock_settings = new GLib.Settings ("io.elementary.desktop.wingpanel.datetime");
+            settings.bind ("clock-format", this, "clock-format", SettingsBindFlags.DEFAULT);
+            settings.bind ("clock-show-seconds", this, "clock-show-seconds", SettingsBindFlags.DEFAULT);
+            settings.bind ("clock-show-date", date_revealer, "reveal_child", SettingsBindFlags.DEFAULT);
+            settings.bind ("clock-show-weekday", this, "clock-show-weekday", SettingsBindFlags.DEFAULT);
 
             notify.connect (() => {
                 update_labels ();

@@ -25,10 +25,15 @@ namespace DateTimeIndicator {
         public signal void selection_changed (GLib.DateTime? new_date);
 
         public GLib.DateTime? selected_date { get; private set; }
+        public GLib.Settings settings { get; construct; }
 
         private Widgets.CalendarGrid calendar_grid;
         private Gtk.Stack stack;
         private Gtk.Grid big_grid;
+
+        public CalendarView (GLib.Settings clock_settings) {
+            Object (settings: clock_settings);
+        }
 
         construct {
             var label = new Gtk.Label (new GLib.DateTime.now_local ().format (_("%OB, %Y")));
@@ -102,7 +107,7 @@ namespace DateTimeIndicator {
         }
 
         private Gtk.Grid create_big_grid () {
-            calendar_grid = new Widgets.CalendarGrid ();
+            calendar_grid = new Widgets.CalendarGrid (settings);
             calendar_grid.show_all ();
 
             calendar_grid.on_event_add.connect ((date) => {

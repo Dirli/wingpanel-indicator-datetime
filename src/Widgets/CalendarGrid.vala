@@ -39,6 +39,12 @@ namespace DateTimeIndicator {
         private Gtk.Label[] header_labels;
         private Gtk.Revealer[] week_labels;
 
+        public GLib.Settings settings { get; construct; }
+
+        public CalendarGrid (GLib.Settings clock_settings) {
+            Object (settings: clock_settings);
+        }
+
         construct {
             header_labels = new Gtk.Label[7];
             for (int c = 0; c < 7; c++) {
@@ -59,7 +65,7 @@ namespace DateTimeIndicator {
             hexpand = true;
             attach (week_sep_revealer, 1, 1, 1, 6);
 
-            Indicator.settings.bind ("show-weeks", week_sep_revealer, "reveal-child", GLib.SettingsBindFlags.DEFAULT);
+            settings.bind ("show-weeks", week_sep_revealer, "reveal-child", GLib.SettingsBindFlags.DEFAULT);
 
             data = new Gee.HashMap<uint, Widgets.CalendarDay> ();
             events |= Gdk.EventMask.SCROLL_MASK;
@@ -243,7 +249,7 @@ namespace DateTimeIndicator {
                 week_labels[c].add (week_label);
                 week_labels[c].show_all ();
 
-                Indicator.settings.bind ("show-weeks", week_labels[c], "reveal-child", GLib.SettingsBindFlags.DEFAULT);
+                settings.bind ("show-weeks", week_labels[c], "reveal-child", GLib.SettingsBindFlags.DEFAULT);
 
                 attach (week_labels[c], 0, c + 1);
 

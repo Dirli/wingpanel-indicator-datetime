@@ -19,7 +19,7 @@
 
 namespace DateTimeIndicator {
     public class Indicator : Wingpanel.Indicator {
-        public static GLib.Settings settings;
+        public GLib.Settings settings;
 
         private Widgets.PanelLabel panel_label;
         private Widgets.CalendarView calendar;
@@ -42,17 +42,14 @@ namespace DateTimeIndicator {
             );
         }
 
-        static construct {
-            settings = new GLib.Settings ("io.elementary.desktop.wingpanel.datetime");
-        }
-
         construct {
             visible = true;
+            settings = new GLib.Settings ("io.elementary.desktop.wingpanel.datetime");
         }
 
         public override Gtk.Widget get_display_widget () {
             if (panel_label == null) {
-                panel_label = new Widgets.PanelLabel ();
+                panel_label = new Widgets.PanelLabel (settings);
             }
 
             return panel_label;
@@ -60,7 +57,7 @@ namespace DateTimeIndicator {
 
         public override Gtk.Widget? get_widget () {
             if (main_grid == null) {
-                calendar = new Widgets.CalendarView ();
+                calendar = new Widgets.CalendarView (settings);
                 calendar.margin_bottom = 6;
                 calendar.day_double_click.connect (() => {
                     close ();
