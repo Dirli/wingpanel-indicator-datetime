@@ -22,7 +22,7 @@ namespace DateTimeIndicator {
     public class Widgets.CalendarView : Gtk.Grid {
         public signal void day_double_click ();
         public signal void event_updates ();
-        public signal void selection_changed (GLib.DateTime? new_date);
+        public signal void selection_changed (GLib.DateTime new_date);
 
         public GLib.DateTime? selected_date { get; private set; }
         public GLib.Settings settings { get; construct; }

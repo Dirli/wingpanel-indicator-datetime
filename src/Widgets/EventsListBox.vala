@@ -1,9 +1,13 @@
 namespace DateTimeIndicator {
     public class Widgets.EventsListBox : Gtk.ListBox {
+        private Gtk.Label placeholder_label;
+        private const string TODAY = _("Today");
+        private const string TOMORROW = _("Tomorrow");
+        private const string YESTERDAY = _("Yesterday");
         public EventsListBox () {
             selection_mode = Gtk.SelectionMode.NONE;
 
-            var placeholder_label = new Gtk.Label (_("No Events on This Day"));
+            placeholder_label = new Gtk.Label (_("No Events ") + TODAY);
             placeholder_label.wrap = true;
             placeholder_label.wrap_mode = Pango.WrapMode.WORD;
             placeholder_label.margin_start = 12;
@@ -25,6 +29,54 @@ namespace DateTimeIndicator {
             foreach (unowned Gtk.Widget widget in get_children ()) {
                 widget.destroy ();
             }
+        }
+
+        public void update_placeholder (GLib.DateTime? new_date) {
+            if (new_date == null) {
+                return;
+            }
+
+            var today = new GLib.DateTime.now_local ();
+            var today_dy = today.get_day_of_year ();
+            var new_dy = new_date.get_day_of_year ();
+            string new_label = "";
+            if (today.get_year () == new_date.get_year () && today_dy == new_dy) {
+                new_label = TODAY;
+            } else {
+                if (today_dy == 1) {
+                    if (new_date.get_year () + 1 == today.get_year () && new_date.get_month () == 12 && new_date.get_day_of_month () == 31) {
+                        new_label = YESTERDAY;
+                    } else if (today_dy + 1 == new_dy) {
+                        new_label = TOMORROW;
+                    }
+                } else if (today.get_month () == 12 && today.get_day_of_month () == 31) {
+                    if (today_dy == new_dy + 1) {
+                        new_label = YESTERDAY;
+                    } else if (new_date.get_year () - 1 == today.get_year () && new_dy == 1) {
+                        new_label = TOMORROW;
+                    }
+                } else if (new_date.get_year () == today.get_year ()) {
+                    if (today_dy == new_dy + 1) {
+                        new_label = YESTERDAY;
+                    } else if (today_dy + 1 == new_dy) {
+                        new_label = TOMORROW;
+                    }
+                }
+            }
+
+            if (new_label == "") {
+                int new_dw = new_date.get_day_of_week ();
+                new_label = new_dw == 1
+                    ? _("on Monday") : new_dw == 2
+                    ? _("on Tuesday") : new_dw == 3
+                    ? _("on Wednesday") : new_dw == 4
+                    ? _("on Thursday") : new_dw == 5
+                    ? _("on Friday") : new_dw == 6
+                    ? _("on Saturday") : new_dw == 7
+                    ? _("on Sunday") : _("This Day");
+            }
+
+            placeholder_label.set_label (_("No Events ") + new_label);
         }
 
         public void update_events (GLib.DateTime? selected_date, HashTable<E.Source, Gee.TreeMultiMap<string, ECal.Component>> source_events) {

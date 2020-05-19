@@ -104,6 +104,7 @@ namespace DateTimeIndicator {
 
                 event_manager.open.begin ((obj, res) => {
                     calendar.selection_changed.connect ((date) => {
+                        event_listbox.update_placeholder (date);
                         idle_update_events ();
                     });
                 });
@@ -114,6 +115,7 @@ namespace DateTimeIndicator {
                     model.compute_ranges ();
 #if USE_EVO
                     event_listbox.clear_list ();
+                    event_listbox.update_placeholder (calendar.selected_date);
                     event_manager.load_all_sources ();
 #endif
                 });
