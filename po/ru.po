@@ -2,60 +2,102 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-09-26 16:48-0700\n"
-"PO-Revision-Date: 2018-08-04 13:55+0000\n"
-"Last-Translator: Kirill Romanov <djaler1@gmail.com>\n"
-"Language-Team: Russian <https://weblate.elementary.io/projects/wingpanel/"
-"wingpanel-indicator-datetime/ru/>\n"
+"POT-Creation-Date: 2020-05-20 13:33+0300\n"
+"PO-Revision-Date: 2020-05-20 13:38+0300\n"
+"Last-Translator: Dirli <litandrej85@gmail.com>\n"
+"Language-Team: \n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.0.1\n"
+"X-Generator: Poedit 2.3.1\n"
 "X-Launchpad-Export-Date: 2017-02-19 05:57+0000\n"
 
-#: src/Indicator.vala:32
+#: Indicator.vala:40
 msgid "Date & Time"
 msgstr "Дата и время"
 
-#: src/Indicator.vala:33
+#: Indicator.vala:41
 msgid "The date and time indicator"
 msgstr "Индикатор даты и времени"
 
-#: src/Indicator.vala:58
-msgid "No Events on This Day"
-msgstr ""
-
-#: src/Indicator.vala:82
+#: Indicator.vala:67
 msgid "Date & Time Settings…"
 msgstr "Параметры даты и времени…"
 
-#: src/Indicator.vala:131
-msgid "During the Day"
-msgstr ""
-
-#: src/Indicator.vala:139
-msgid "All Day"
-msgstr ""
-
-#: src/Widgets/calendar/CalendarView.vala:33
-#: src/Widgets/calendar/CalendarView.vala:85
+#: Widgets/CalendarView.vala:39 Widgets/CalendarView.vala:91
 msgid "%OB, %Y"
 msgstr ""
 
-#: src/Widgets/calendar/CalendarView.vala:48
+#: Widgets/CalendarView.vala:54
 msgid "Go to today's date"
-msgstr ""
+msgstr "Перейти к сегодняшней дате"
 
-#: src/Widgets/calendar/CalendarView.vala:145
+#: Widgets/CalendarView.vala:150
 msgid "Unable To Launch Calendar"
-msgstr ""
+msgstr "Не удается запустить календарь"
 
-#: src/Widgets/calendar/CalendarView.vala:146
+#: Widgets/CalendarView.vala:151
 msgid "The program \"io.elementary.calendar\" may not be installed"
-msgstr ""
+msgstr "Прогорамма \"io.elementary.calendar\" возможно не установлена"
+
+#: Widgets/EventsListBox.vala:4
+msgid "Today"
+msgstr "Сегодня"
+
+#: Widgets/EventsListBox.vala:5
+msgid "Tomorrow"
+msgstr "Завтра"
+
+#: Widgets/EventsListBox.vala:6
+msgid "Yesterday"
+msgstr "Вчера"
+
+#: Widgets/EventsListBox.vala:10 Widgets/EventsListBox.vala:79
+msgid "No Events "
+msgstr "Нет событий"
+
+#: Widgets/EventsListBox.vala:70
+msgid "on Monday"
+msgstr "в Понедельник"
+
+#: Widgets/EventsListBox.vala:71
+msgid "on Tuesday"
+msgstr "во Вторник"
+
+#: Widgets/EventsListBox.vala:72
+msgid "on Wednesday"
+msgstr "в Среду"
+
+#: Widgets/EventsListBox.vala:73
+msgid "on Thursday"
+msgstr "в Четверг"
+
+#: Widgets/EventsListBox.vala:74
+msgid "on Friday"
+msgstr "в Пятницу"
+
+#: Widgets/EventsListBox.vala:75
+msgid "on Saturday"
+msgstr "в Субботу"
+
+#: Widgets/EventsListBox.vala:76
+msgid "on Sunday"
+msgstr "в Воскресенье"
+
+#: Widgets/EventsListBox.vala:76
+msgid "on This Day"
+msgstr "в этот день"
+
+#: Widgets/EventsListBox.vala:119
+msgid "During the Day"
+msgstr "В течение дня"
+
+#: Widgets/EventsListBox.vala:127
+msgid "All Day"
+msgstr "Весь день"
 
 #~ msgid "%OB %Y"
 #~ msgstr "%OB %Y"

@@ -73,7 +73,7 @@ namespace DateTimeIndicator {
                     ? _("on Thursday") : new_dw == 5
                     ? _("on Friday") : new_dw == 6
                     ? _("on Saturday") : new_dw == 7
-                    ? _("on Sunday") : _("This Day");
+                    ? _("on Sunday") : _("on This Day");
             }
 
             placeholder_label.set_label (_("No Events ") + new_label);
