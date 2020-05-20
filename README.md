@@ -1,6 +1,6 @@
 # Wingpanel Date &amp; Time Indicator
-[![Packaging status](https://repology.org/badge/tiny-repos/wingpanel-indicator-datetime.svg)](https://repology.org/metapackage/wingpanel-indicator-datetime)
-[![Translation status](https://l10n.elementary.io/widgets/wingpanel/-/wingpanel-indicator-datetime/svg-badge.svg)](https://l10n.elementary.io/engage/wingpanel/?utm_source=widget)
+
+The package differs from the original one by the ability to refuse the Evolution Data Server.
 
 ![Screenshot](data/screenshot.png?raw=true)
 

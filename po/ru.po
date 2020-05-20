@@ -57,7 +57,7 @@ msgstr "Вчера"
 
 #: Widgets/EventsListBox.vala:10 Widgets/EventsListBox.vala:79
 msgid "No Events "
-msgstr "Нет событий"
+msgstr "Нет событий "
 
 #: Widgets/EventsListBox.vala:70
 msgid "on Monday"
