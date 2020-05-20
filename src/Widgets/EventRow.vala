@@ -115,8 +115,13 @@ namespace DateTimeIndicator {
         }
 
         private void set_color () {
-            Util.set_event_calendar_color (cal, grid);
-            Util.set_event_calendar_color (cal, event_image);
+            var provider = Util.set_event_calendar_color (cal.dup_color ());
+
+            unowned Gtk.StyleContext grid_context = grid.get_style_context ();
+            grid_context.add_provider (provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+
+            unowned Gtk.StyleContext event_image_context = event_image.get_style_context ();
+            event_image_context.add_provider (provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
         }
     }
 }

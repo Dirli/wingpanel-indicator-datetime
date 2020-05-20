@@ -82,9 +82,9 @@ namespace DateTimeIndicator {
                 selected_gridday.set_selected (false);
             }
 
-            var selected_date = (day as Widgets.CalendarDay).date;
+            var selected_date = ((Widgets.CalendarDay) day).date;
             selected_gridday = day as Widgets.CalendarDay;
-            (day as Widgets.CalendarDay).set_selected (true);
+            ((Widgets.CalendarDay) day).set_selected (true);
             day.set_state_flags (Gtk.StateFlags.FOCUSED, false);
             var calmodel = Models.CalendarModel.get_default ();
             var date_month = selected_date.get_month () - calmodel.month_start.get_month ();
@@ -293,12 +293,13 @@ namespace DateTimeIndicator {
         public void add_event_dots (E.Source source, Gee.Collection<ECal.Component> events) {
             foreach (var component in events) {
                 unowned ICal.Component? icomp = component.get_icalcomponent ();
-                ICal.Time? start_time = icomp.get_dtstart ();
+                ICal.Time start_time = icomp.get_dtstart ();
                 time_t start_unix = start_time.as_timet ();
                 var t = new DateTime.from_unix_utc (start_unix);
                 var d_hash = day_hash (t);
                 if (data.has_key (d_hash)) {
-                    data[d_hash].add_dots (source, component.get_icalcomponent ());
+                    var source_calendar = (E.SourceCalendar?) source.get_extension (E.SOURCE_EXTENSION_CALENDAR);
+                    data[d_hash].add_dots (source_calendar.dup_color (), icomp.get_uid ());
                 }
             }
         }
@@ -308,12 +309,13 @@ namespace DateTimeIndicator {
                 unowned ICal.Component ical = component.get_icalcomponent ();
                 var event_uid = ical.get_uid ();
 
-                ICal.Time? start_time = ical.get_dtstart ();
+                ICal.Time start_time = ical.get_dtstart ();
                 time_t start_unix = start_time.as_timet ();
                 var t = new DateTime.from_unix_utc (start_unix);
                 var d_hash = day_hash (t);
                 if (data.has_key (d_hash)) {
-                    data[d_hash].remove_dots (event_uid);
+                    var source_calendar = (E.SourceCalendar?) source.get_extension (E.SOURCE_EXTENSION_CALENDAR);
+                    data[d_hash].remove_dots (source_calendar.dup_color (), event_uid);
                 }
             }
         }

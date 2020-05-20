@@ -36,7 +36,9 @@ namespace DateTimeIndicator {
         private static Gtk.CssProvider provider;
         private static Models.CalendarModel model;
 
-        private Gee.ArrayList<string> event_dots;
+        private Gee.HashMap<string, Gee.ArrayList<string>> color_events;
+        private Gee.HashMap<string, Gtk.Widget> dot_widgets;
+        private Gee.HashMap<string, Gtk.CssProvider> color_providers;
         private Gtk.Grid event_grid;
         private Gtk.Label label;
         private bool valid_grab = false;
@@ -87,8 +89,9 @@ namespace DateTimeIndicator {
                 label.label = date.get_day_of_month ().to_string ();
             });
 
-            // event_dots = new Gee.HashMap<string, Gtk.Widget> ();
-            event_dots = new Gee.ArrayList<string> ();
+            dot_widgets = new Gee.HashMap<string, Gtk.Widget> ();
+            color_providers = new Gee.HashMap<string, Gtk.CssProvider> ();
+            color_events = new Gee.HashMap<string, Gee.ArrayList<string>> ();
         }
 
         public bool on_scroll_event (Gdk.EventScroll event) {
@@ -140,45 +143,71 @@ namespace DateTimeIndicator {
         }
 
 #if USE_EVO
-        public void add_dots (E.Source source, ICal.Component ical) {
-            var event_uid = ical.get_uid ();
-            if (event_dots.contains (event_uid)) {
-                return;
+        public void add_dots (string color, string event_uid) {
+            if (!color_providers.has_key (color)) {
+                var color_provider = Util.set_event_calendar_color (color);
+
+                if (color_provider != null) {
+                    color_providers[color] = color_provider;
+                }
             }
 
-            event_dots.add (event_uid);
-            if (event_dots.size > 3) {
-                return;
+            if (color_events.has_key (color)) {
+                if (!color_events[color].contains (event_uid)) {
+                    color_events[color].add (event_uid);
+                }
+            } else {
+                var events_array = new Gee.ArrayList<string> ();
+                events_array.add (event_uid);
+                color_events[color] = events_array;
             }
 
-            var event_dot = new Gtk.Image ();
-            event_dot.gicon = new ThemedIcon ("pager-checked-symbolic");
-            event_dot.pixel_size = 6;
+            if (dot_widgets.size < 3 && !dot_widgets.has_key (color)) {
+                var event_dot = new Gtk.Image ();
+                event_dot.gicon = new ThemedIcon ("pager-checked-symbolic");
+                event_dot.pixel_size = 6;
 
-            unowned Gtk.StyleContext style_context = event_dot.get_style_context ();
-            style_context.add_class (Granite.STYLE_CLASS_ACCENT);
-            style_context.add_provider (provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+                dot_widgets[color] = event_dot;
 
-            var source_calendar = (E.SourceCalendar?) source.get_extension (E.SOURCE_EXTENSION_CALENDAR);
-            Util.set_event_calendar_color (source_calendar, event_dot);
+                unowned Gtk.StyleContext style_context = event_dot.get_style_context ();
+                style_context.add_class (Granite.STYLE_CLASS_ACCENT);
+                style_context.add_provider (provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+                if (color_providers.has_key (color)) {
+                    style_context.add_provider (color_providers[color], Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+                }
 
-            event_grid.add (event_dot);
-            event_dot.show ();
+                event_grid.add (event_dot);
+                event_dot.show ();
+            }
         }
 
-        public void remove_dots (string event_uid) {
-            if (!event_dots.contains (event_uid)) {
+        public void remove_dots (string color, string event_uid) {
+            if (!color_events.has_key (color) || !color_events[color].contains (event_uid)) {
                 return;
             }
 
-            event_dots.remove (event_uid);
-            if (event_dots.size >= 3) {
+            color_events[color].remove (event_uid);
+            if (color_events[color].size != 0) {
                 return;
             }
 
-            var w = event_grid.get_children ();
-            if (w.length () > 0) {
-                w.nth_data (0).destroy ();
+            color_events.unset (color);
+
+            if (dot_widgets.has_key (color)) {
+                if (color_events.size > 2) {
+                    color_events.foreach ((entry) => {
+                        if (!dot_widgets.has_key (entry.key)) {
+                            unowned Gtk.StyleContext style_context = dot_widgets[color].get_style_context ();
+                            if (color_providers.has_key (color)) {
+                                style_context.add_provider (color_providers[color], Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+                                return false;
+                            }
+                        }
+                        return true;
+                    });
+                } else {
+                    dot_widgets[color].destroy ();
+                }
             }
         }
 #endif
