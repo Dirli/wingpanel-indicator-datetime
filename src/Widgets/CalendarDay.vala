@@ -57,6 +57,7 @@ namespace DateTimeIndicator {
             style_context.add_class ("circular");
 
             label = new Gtk.Label (null);
+            label.margin_top = 6;
 
             event_grid = new Gtk.Grid ();
             event_grid.halign = Gtk.Align.CENTER;
@@ -212,8 +213,18 @@ namespace DateTimeIndicator {
         public void set_selected (bool selected) {
             if (selected) {
                 set_state_flags (Gtk.StateFlags.SELECTED, true);
+
+                dot_widgets.foreach ((entry) => {
+                    entry.value.hide ();
+                    return true;
+                });
             } else {
                 set_state_flags (Gtk.StateFlags.NORMAL, true);
+
+                dot_widgets.foreach ((entry) => {
+                    entry.value.show ();
+                    return true;
+                });
             }
         }
 
