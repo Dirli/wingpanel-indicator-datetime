@@ -24,7 +24,6 @@ namespace DateTimeIndicator {
         private Services.TimeManager time_manager;
 
         public string clock_format { get; set; }
-        public bool clock_show_seconds { get; set; }
         public bool clock_show_weekday { get; set; }
 
         public PanelLabel (GLib.Settings settings) {
@@ -43,7 +42,6 @@ namespace DateTimeIndicator {
 
             // var clock_settings = new GLib.Settings ("io.elementary.desktop.wingpanel.datetime");
             settings.bind ("clock-format", this, "clock-format", SettingsBindFlags.DEFAULT);
-            settings.bind ("clock-show-seconds", this, "clock-show-seconds", SettingsBindFlags.DEFAULT);
             settings.bind ("clock-show-date", date_revealer, "reveal_child", SettingsBindFlags.DEFAULT);
             settings.bind ("clock-show-weekday", this, "clock-show-weekday", SettingsBindFlags.DEFAULT);
 
@@ -66,7 +64,7 @@ namespace DateTimeIndicator {
 
             date_label.label = time_manager.format (date_format);
 
-            string time_format = Granite.DateTime.get_default_time_format (time_manager.is_12h, clock_show_seconds);
+            string time_format = Granite.DateTime.get_default_time_format (time_manager.is_12h);
             time_label.label = time_manager.format (time_format);
         }
     }

@@ -16,11 +16,6 @@
             <summary>(DEPRECATED) Whether the clock displays in 12h, 24h, or ISO format</summary>
             <description>This key is deprecated and is now ignored unless ISO format is selected.</description>
         </key>
-        <key type="b" name="clock-show-seconds">
-            <default>false</default>
-            <summary>If this is set to true, seconds will be shown in the clock</summary>
-            <description>If this is set to true, seconds will be shown in the clock</description>
-        </key>
         <key type="b" name="clock-show-date">
             <default>true</default>
             <summary>If this is set to true, the date will be shown in the clock</summary>
