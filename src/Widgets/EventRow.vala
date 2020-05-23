@@ -18,7 +18,7 @@
  */
 
 namespace DateTimeIndicator {
-    public class EventRow : Gtk.ListBoxRow {
+    public class Widgets.EventRow : Gtk.ListBoxRow {
         public GLib.DateTime date { get; construct; }
         public unowned ICal.Component component { get; construct; }
         public unowned E.SourceCalendar cal { get; construct; }

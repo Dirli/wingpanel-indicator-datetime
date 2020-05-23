@@ -86,7 +86,7 @@ namespace DateTimeIndicator {
                 return;
             }
 
-            var events_on_day = new Gee.TreeMap<string, EventRow> ();
+            var events_on_day = new Gee.TreeMap<string, Widgets.EventRow> ();
 
             source_events.@foreach ((source, component_map) => {
                 foreach (var comp in component_map.get_values ()) {
@@ -94,7 +94,7 @@ namespace DateTimeIndicator {
                         unowned ICal.Component ical = comp.get_icalcomponent ();
                         var event_uid = ical.get_uid ();
                         if (!events_on_day.has_key (event_uid)) {
-                            events_on_day[event_uid] = new EventRow (selected_date, ical, source);
+                            events_on_day[event_uid] = new Widgets.EventRow (selected_date, ical, source);
 
                             add (events_on_day[event_uid]);
                         }
@@ -107,9 +107,9 @@ namespace DateTimeIndicator {
         }
 
         private void header_update_func (Gtk.ListBoxRow lbrow, Gtk.ListBoxRow? lbbefore) {
-            var row = (EventRow) lbrow;
+            var row = (Widgets.EventRow) lbrow;
             if (lbbefore != null) {
-                var before = (EventRow) lbbefore;
+                var before = (Widgets.EventRow) lbbefore;
                 if (row.is_allday == before.is_allday) {
                     row.set_header (null);
                     return;
@@ -135,8 +135,8 @@ namespace DateTimeIndicator {
 
         [CCode (instance_pos = -1)]
         private int sort_function (Gtk.ListBoxRow child1, Gtk.ListBoxRow child2) {
-            var e1 = (EventRow) child1;
-            var e2 = (EventRow) child2;
+            var e1 = (Widgets.EventRow) child1;
+            var e2 = (Widgets.EventRow) child2;
 
             if (e1.start_time.compare (e2.start_time) != 0) {
                 return e1.start_time.compare (e2.start_time);

@@ -86,7 +86,7 @@ namespace DateTimeIndicator {
 
                 event_listbox = new Widgets.EventsListBox ();
                 event_listbox.row_activated.connect ((row) => {
-                    calendar.show_date_in_maya (((EventRow) row).date);
+                    calendar.show_date_in_maya (((Widgets.EventRow) row).date);
                     close ();
                 });
 
