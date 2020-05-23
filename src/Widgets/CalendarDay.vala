@@ -34,7 +34,6 @@ namespace DateTimeIndicator {
         private bool has_scrolled = false;
 
         private static Gtk.CssProvider provider;
-        private static Models.CalendarModel model;
 
         private Gee.HashMap<string, Gee.ArrayList<string>> color_events;
         private Gee.HashMap<string, Gtk.Widget> dot_widgets;
@@ -48,8 +47,6 @@ namespace DateTimeIndicator {
         }
 
         static construct {
-            model = Models.CalendarModel.get_default ();
-
             provider = new Gtk.CssProvider ();
             provider.load_from_resource ("/io/elementary/desktop/wingpanel/datetime/GridDay.css");
         }
