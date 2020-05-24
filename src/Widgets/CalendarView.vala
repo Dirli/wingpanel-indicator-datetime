@@ -29,7 +29,7 @@ namespace DateTimeIndicator {
 
         private Widgets.CalendarGrid calendar_grid;
         private Gtk.Stack stack;
-        private Gtk.Grid big_grid;
+        private Gtk.Container big_grid;
 
         public CalendarView (GLib.Settings clock_settings) {
             Object (settings: clock_settings);
@@ -106,7 +106,7 @@ namespace DateTimeIndicator {
             });
         }
 
-        private Gtk.Grid create_big_grid () {
+        private Gtk.Container create_big_grid () {
             calendar_grid = new Widgets.CalendarGrid (settings);
             calendar_grid.show_all ();
 

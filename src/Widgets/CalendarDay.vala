@@ -31,8 +31,6 @@ namespace DateTimeIndicator {
 
         public GLib.DateTime date { get; construct set; }
 
-        private bool has_scrolled = false;
-
         private static Gtk.CssProvider provider;
 
         private Gee.HashMap<string, Gee.ArrayList<string>> color_events;
@@ -71,7 +69,7 @@ namespace DateTimeIndicator {
             can_focus = true;
             events |= Gdk.EventMask.BUTTON_PRESS_MASK;
             events |= Gdk.EventMask.KEY_PRESS_MASK;
-            events |= Gdk.EventMask.SMOOTH_SCROLL_MASK;
+
             set_size_request (35, 35);
             halign = Gtk.Align.CENTER;
             hexpand = true;
@@ -81,7 +79,6 @@ namespace DateTimeIndicator {
             // Signals and handlers
             button_press_event.connect (on_button_press);
             key_press_event.connect (on_key_press);
-            scroll_event.connect (on_scroll_event);
 
             notify["date"].connect (() => {
                 label.label = date.get_day_of_month ().to_string ();
@@ -90,54 +87,6 @@ namespace DateTimeIndicator {
             dot_widgets = new Gee.HashMap<string, Gtk.Widget> ();
             color_providers = new Gee.HashMap<string, Gtk.CssProvider> ();
             color_events = new Gee.HashMap<string, Gee.ArrayList<string>> ();
-        }
-
-        public bool on_scroll_event (Gdk.EventScroll event) {
-            double delta_x;
-            double delta_y;
-            event.get_scroll_deltas (out delta_x, out delta_y);
-
-            double choice = delta_x;
-
-            if (((int)delta_x).abs () < ((int)delta_y).abs ()) {
-                choice = delta_y;
-            }
-
-            /* It's mouse scroll ! */
-            if (choice == 1 || choice == -1) {
-                Models.CalendarModel.get_default ().change_month ((int) choice);
-
-                return true;
-            }
-
-            if (has_scrolled == true) {
-                return true;
-            }
-
-            if (choice > 0.3) {
-                reset_timer.begin ();
-                Models.CalendarModel.get_default ().change_month (1);
-
-                return true;
-            }
-
-            if (choice < -0.3) {
-                reset_timer.begin ();
-                Models.CalendarModel.get_default ().change_month (-1);
-
-                return true;
-            }
-
-            return false;
-        }
-
-        public async void reset_timer () {
-            has_scrolled = true;
-            Timeout.add (500, () => {
-                has_scrolled = false;
-
-                return false;
-            });
         }
 
 #if USE_EVO

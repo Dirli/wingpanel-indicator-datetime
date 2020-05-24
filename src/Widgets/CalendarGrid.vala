@@ -24,16 +24,18 @@ namespace DateTimeIndicator {
 /**
  * Represents the entire date grid as a table.
  */
-    public class Widgets.CalendarGrid : Gtk.Grid {
+    public class Widgets.CalendarGrid : Gtk.EventBox {
         public Util.DateRange grid_range { get; private set; }
 
         /*
          * Event emitted when the day is double clicked or the ENTER key is pressed.
          */
         public signal void on_event_add (GLib.DateTime date);
-
         public signal void selection_changed (GLib.DateTime new_date, bool up);
 
+        private bool has_scrolled = false;
+
+        private Gtk.Grid inner_grid;
         private Gee.HashMap<uint, Widgets.CalendarDay> data;
         private Widgets.CalendarDay selected_gridday;
         private Gtk.Label[] header_labels;
@@ -46,13 +48,18 @@ namespace DateTimeIndicator {
         }
 
         construct {
+            inner_grid = new Gtk.Grid ();
+            inner_grid.hexpand = true;
+
             header_labels = new Gtk.Label[7];
             for (int c = 0; c < 7; c++) {
                 header_labels[c] = new Gtk.Label (null);
                 header_labels[c].get_style_context ().add_class (Granite.STYLE_CLASS_H4_LABEL);
 
-                attach (header_labels[c], c + 2, 0);
+                inner_grid.attach (header_labels[c], c + 2, 0);
             }
+
+            can_focus = true;
 
             var week_sep = new Gtk.Separator (Gtk.Orientation.VERTICAL);
             week_sep.margin_start = 9;
@@ -62,19 +69,70 @@ namespace DateTimeIndicator {
             week_sep_revealer.transition_type = Gtk.RevealerTransitionType.SLIDE_LEFT;
             week_sep_revealer.add (week_sep);
 
-            hexpand = true;
-            attach (week_sep_revealer, 1, 1, 1, 6);
+            inner_grid.attach (week_sep_revealer, 1, 1, 1, 6);
 
             settings.bind ("show-weeks", week_sep_revealer, "reveal-child", GLib.SettingsBindFlags.DEFAULT);
 
+            add (inner_grid);
+
             data = new Gee.HashMap<uint, Widgets.CalendarDay> ();
-            events |= Gdk.EventMask.SCROLL_MASK;
+            // events |= Gdk.EventMask.SCROLL_MASK;
             events |= Gdk.EventMask.SMOOTH_SCROLL_MASK;
+
+            scroll_event.connect (on_scroll_event);
+        }
+
+        public bool on_scroll_event (Gdk.EventScroll event) {
+            double delta_x;
+            double delta_y;
+            event.get_scroll_deltas (out delta_x, out delta_y);
+
+            double choice = delta_x;
+
+            if (((int)delta_x).abs () < ((int)delta_y).abs ()) {
+                choice = delta_y;
+            }
+
+            /* It's mouse scroll ! */
+            if (choice == 1 || choice == -1) {
+                Models.CalendarModel.get_default ().change_month ((int) choice);
+
+                return true;
+            }
+
+            if (has_scrolled == true) {
+                return true;
+            }
+
+            if (choice > 0.3) {
+                reset_timer ();
+                Models.CalendarModel.get_default ().change_month (1);
+
+                return true;
+            }
+
+            if (choice < -0.3) {
+                reset_timer ();
+                Models.CalendarModel.get_default ().change_month (-1);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public void reset_timer () {
+            has_scrolled = true;
+            Timeout.add (500, () => {
+                has_scrolled = false;
+
+                return false;
+            });
         }
 
         private bool on_day_focus_in (Gdk.EventFocus event) {
-            var day = get_focus_child ();
-            if (day == null) {
+            var day = inner_grid.get_focus_child ();
+            if (day == null || !(day is Widgets.CalendarDay)) {
                 return false;
             }
 
@@ -173,7 +231,7 @@ namespace DateTimeIndicator {
                     });
                     day.focus_in_event.connect (on_day_focus_in);
 
-                    attach (day, col + 2, row);
+                    inner_grid.attach (day, col + 2, row);
                     day.show_all ();
                 }
 
@@ -251,7 +309,7 @@ namespace DateTimeIndicator {
 
                 settings.bind ("show-weeks", week_labels[c], "reveal-child", GLib.SettingsBindFlags.DEFAULT);
 
-                attach (week_labels[c], 0, c + 1);
+                inner_grid.attach (week_labels[c], 0, c + 1);
 
                 next = next.add_weeks (1);
             }
