@@ -68,7 +68,6 @@ namespace DateTimeIndicator {
 
             can_focus = true;
             events |= Gdk.EventMask.BUTTON_PRESS_MASK;
-            events |= Gdk.EventMask.KEY_PRESS_MASK;
 
             set_size_request (35, 35);
             halign = Gtk.Align.CENTER;
@@ -78,7 +77,6 @@ namespace DateTimeIndicator {
 
             // Signals and handlers
             button_press_event.connect (on_button_press);
-            key_press_event.connect (on_key_press);
 
             notify["date"].connect (() => {
                 label.label = date.get_day_of_month ().to_string ();
@@ -199,15 +197,6 @@ namespace DateTimeIndicator {
                 on_event_add (date);
             valid_grab = true;
             grab_focus ();
-            return false;
-        }
-
-        private bool on_key_press (Gdk.EventKey event) {
-            if (event.keyval == Gdk.keyval_from_name ("Return") ) {
-                on_event_add (date);
-                return true;
-            }
-
             return false;
         }
     }

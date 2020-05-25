@@ -30,7 +30,7 @@ namespace DateTimeIndicator {
         /*
          * Event emitted when the day is double clicked or the ENTER key is pressed.
          */
-        public signal void on_event_add (GLib.DateTime date);
+        public signal void on_event_add (GLib.DateTime? date);
         public signal void selection_changed (GLib.DateTime new_date, bool up);
 
         private bool has_scrolled = false;
@@ -78,8 +78,10 @@ namespace DateTimeIndicator {
             data = new Gee.HashMap<uint, Widgets.CalendarDay> ();
             // events |= Gdk.EventMask.SCROLL_MASK;
             events |= Gdk.EventMask.SMOOTH_SCROLL_MASK;
+            events |= Gdk.EventMask.KEY_PRESS_MASK;
 
             scroll_event.connect (on_scroll_event);
+            key_press_event.connect (on_key_press);
         }
 
         public bool on_scroll_event (Gdk.EventScroll event) {
@@ -89,7 +91,7 @@ namespace DateTimeIndicator {
 
             double choice = delta_x;
 
-            if (((int)delta_x).abs () < ((int)delta_y).abs ()) {
+            if (((int) delta_x).abs () < ((int) delta_y).abs ()) {
                 choice = delta_y;
             }
 
@@ -121,6 +123,56 @@ namespace DateTimeIndicator {
             return false;
         }
 
+        private bool on_key_press (Gdk.EventKey event) {
+            if (event.keyval == Gdk.keyval_from_name ("Return") ) {
+                on_event_add (selected_gridday.date);
+                return true;
+            }
+
+            if (event.keyval == Gdk.keyval_from_name ("Esc") ) {
+                on_event_add (null);
+                return true;
+            }
+
+            if (event.keyval == Gdk.keyval_from_name ("Page_Down") || event.keyval == Gdk.keyval_from_name ("Page_Up")) {
+                var selected_date = selected_gridday.date.add_months (event.keyval == Gdk.keyval_from_name ("Page_Down") ? 1 : -1);
+                selection_changed (selected_date, false);
+
+                Models.CalendarModel.get_default ().change_month (event.keyval == Gdk.keyval_from_name ("Page_Down") ? 1 : -1);
+                return true;
+            }
+
+            if (event.keyval == Gdk.keyval_from_name ("Left")
+             || event.keyval == Gdk.keyval_from_name ("Right")
+             || event.keyval == Gdk.keyval_from_name ("Up")
+             || event.keyval == Gdk.keyval_from_name ("Down")) {
+                var new_date = selected_gridday.date.add_days (event.keyval == Gdk.keyval_from_name ("Right")
+                                                               ? 1 : event.keyval == Gdk.keyval_from_name ("Left")
+                                                               ? -1 : event.keyval == Gdk.keyval_from_name ("Up")
+                                                               ? -7 : 7);
+                var date_month = new_date.get_month () - selected_gridday.date.get_month ();
+                var date_year = new_date.get_year () - selected_gridday.date.get_year ();
+
+                if (date_month != 0 || date_year != 0) {
+                    selection_changed (new_date, false);
+                    Models.CalendarModel.get_default ().change_month (date_month, date_year);
+
+                    return true;
+                } else {
+                    var new_date_hash = day_hash (new_date);
+                    if (data.has_key (new_date_hash)) {
+                        data[new_date_hash].grab_focus_force ();
+                        data[new_date_hash].set_selected (true);
+                        data[new_date_hash].set_state_flags (Gtk.StateFlags.FOCUSED, false);
+
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         public void reset_timer () {
             has_scrolled = true;
             Timeout.add (500, () => {
@@ -132,7 +184,7 @@ namespace DateTimeIndicator {
 
         private bool on_day_focus_in (Gdk.EventFocus event) {
             var day = inner_grid.get_focus_child ();
-            if (day == null || !(day is Widgets.CalendarDay)) {
+            if (day == null && !(day is Widgets.CalendarDay)) {
                 return false;
             }
 

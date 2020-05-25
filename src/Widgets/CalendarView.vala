@@ -111,7 +111,9 @@ namespace DateTimeIndicator {
             calendar_grid.show_all ();
 
             calendar_grid.on_event_add.connect ((date) => {
-                show_date_in_maya (date);
+                if (date != null) {
+                    show_date_in_maya (date);
+                }
                 day_double_click ();
             });
 
