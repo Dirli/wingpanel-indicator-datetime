@@ -94,10 +94,12 @@ namespace DateTimeIndicator {
             });
 
             left_button.clicked.connect (() => {
+                selected_date = selected_date.add_months (-1);
                 model.change_month (-1);
             });
 
             right_button.clicked.connect (() => {
+                selected_date = selected_date.add_months (1);
                 model.change_month (1);
             });
 

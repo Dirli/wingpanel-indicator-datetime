@@ -27,10 +27,11 @@ namespace DateTimeIndicator {
 #if USE_EVO
         private Widgets.EventsListBox event_listbox;
         private Services.EventsManager event_manager;
+
+        private uint update_events_idle_source = 0;
 #endif
 
         private Gtk.Grid main_grid;
-        private uint update_events_idle_source = 0;
 
         private bool opened_widget = false;
 
