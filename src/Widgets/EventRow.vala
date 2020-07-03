@@ -50,8 +50,15 @@ namespace DateTimeIndicator {
         }
 
         construct {
-            start_time = Util.ical_to_date_time (component.get_dtstart ());
-            end_time = Util.ical_to_date_time (component.get_dtend ());
+            var dt_start = component.get_dtstart ();
+            start_time = dt_start.is_date () ?
+                         Util.ical_to_date_time (dt_start) :
+                         Util.ical_to_date_time (dt_start).to_local ();
+
+            var dt_end = component.get_dtend ();
+            end_time = dt_end.is_date () ?
+                       Util.ical_to_date_time (dt_end) :
+                       Util.ical_to_date_time (dt_end).to_local ();
 
             if (end_time != null && Util.is_the_all_day (start_time, end_time)) {
                 is_allday = true;

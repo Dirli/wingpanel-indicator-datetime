@@ -1464,9 +1464,9 @@ namespace ICal {
 		[CCode (cname = "icaltimezone_get_tznames")]
 		public unowned string get_tznames ();
 		[CCode (cname = "icaltimezone_get_utc_offset")]
-		public int get_utc_offset (out ICal.Time? tt, out int is_daylight);
+        public int get_utc_offset (ICal.Time? tt, out int is_daylight);
 		[CCode (cname = "icaltimezone_get_utc_offset_of_utc_time")]
-		public int get_utc_offset_of_utc_time (out ICal.Time tt, out int is_daylight);
+        public int get_utc_offset_of_utc_time (ICal.Time tt, out int is_daylight);
 		[CCode (cname = "icaltimezone_get_utc_timezone")]
 		public static unowned ICal.Timezone get_utc_timezone ();
 		[CCode (cname = "icaltimezone_release_zone_tab")]
@@ -2897,7 +2897,7 @@ namespace ICal {
 	public static ICal.RecurrenceWeekday icalrecur_string_to_weekday (string str);
 	[CCode (cheader_filename = "libical/ical.h", cname = "set_zone_directory")]
 	public static void set_zone_directory (string path);
-	
+
 	namespace Size {
 		[CCode (cheader_filename = "libical/ical.h", cname = "ICAL_BY_DAY_SIZE")]
 		public const int BY_SECOND;
