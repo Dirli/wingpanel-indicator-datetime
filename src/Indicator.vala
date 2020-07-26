@@ -36,11 +36,7 @@ namespace DateTimeIndicator {
         private bool opened_widget = false;
 
         public Indicator () {
-            Object (
-                code_name: Wingpanel.Indicator.DATETIME,
-                display_name: _("Date & Time"),
-                description: _("The date and time indicator")
-            );
+            Object (code_name: Wingpanel.Indicator.DATETIME);
         }
 
         construct {
