@@ -29,6 +29,7 @@ deps = [
     dependency('gobject-2.0'),
     dependency('granite'),
     dependency('gtk+-3.0'),
+    dependency('libhandy-1'),
     wingpanel_dep,
     meson.get_compiler('vala').find_library('posix')
 ]

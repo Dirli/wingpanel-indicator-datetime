@@ -31,9 +31,8 @@ namespace DateTimeIndicator {
          * Event emitted when the day is double clicked or the ENTER key is pressed.
          */
         public signal void on_event_add (GLib.DateTime? date);
+        public signal void change_month (int m_relative, GLib.DateTime date);
         public signal void selection_changed (GLib.DateTime new_date, bool up);
-
-        private bool has_scrolled = false;
 
         private Gtk.Grid inner_grid;
         private Gee.HashMap<uint, Widgets.CalendarDay> data;
@@ -76,51 +75,10 @@ namespace DateTimeIndicator {
             add (inner_grid);
 
             data = new Gee.HashMap<uint, Widgets.CalendarDay> ();
-            // events |= Gdk.EventMask.SCROLL_MASK;
-            events |= Gdk.EventMask.SMOOTH_SCROLL_MASK;
+
             events |= Gdk.EventMask.KEY_PRESS_MASK;
 
-            scroll_event.connect (on_scroll_event);
             key_press_event.connect (on_key_press);
-        }
-
-        public bool on_scroll_event (Gdk.EventScroll event) {
-            double delta_x;
-            double delta_y;
-            event.get_scroll_deltas (out delta_x, out delta_y);
-
-            double choice = delta_x;
-
-            if (((int) delta_x).abs () < ((int) delta_y).abs ()) {
-                choice = delta_y;
-            }
-
-            /* It's mouse scroll ! */
-            if (choice == 1 || choice == -1) {
-                Models.CalendarModel.get_default ().change_month ((int) choice);
-
-                return true;
-            }
-
-            if (has_scrolled == true) {
-                return true;
-            }
-
-            if (choice > 0.3) {
-                reset_timer ();
-                Models.CalendarModel.get_default ().change_month (1);
-
-                return true;
-            }
-
-            if (choice < -0.3) {
-                reset_timer ();
-                Models.CalendarModel.get_default ().change_month (-1);
-
-                return true;
-            }
-
-            return false;
         }
 
         private bool on_key_press (Gdk.EventKey event) {
@@ -136,9 +94,10 @@ namespace DateTimeIndicator {
 
             if (event.keyval == Gdk.keyval_from_name ("Page_Down") || event.keyval == Gdk.keyval_from_name ("Page_Up")) {
                 var selected_date = selected_gridday.date.add_months (event.keyval == Gdk.keyval_from_name ("Page_Down") ? 1 : -1);
-                selection_changed (selected_date, false);
 
-                Models.CalendarModel.get_default ().change_month (event.keyval == Gdk.keyval_from_name ("Page_Down") ? 1 : -1);
+                ungrab_focus ();
+                change_month (event.keyval == Gdk.keyval_from_name ("Page_Down") ? 1 : -1, selected_date);
+
                 return true;
             }
 
@@ -151,18 +110,16 @@ namespace DateTimeIndicator {
                                                                ? -1 : event.keyval == Gdk.keyval_from_name ("Up")
                                                                ? -7 : 7);
                 var date_month = new_date.get_month () - selected_gridday.date.get_month ();
-                var date_year = new_date.get_year () - selected_gridday.date.get_year ();
 
-                if (date_month != 0 || date_year != 0) {
-                    selection_changed (new_date, false);
-                    Models.CalendarModel.get_default ().change_month (date_month, date_year);
+                if (date_month != 0) {
+                    ungrab_focus ();
+                    change_month (date_month, new_date);
 
                     return true;
                 } else {
                     var new_date_hash = day_hash (new_date);
                     if (data.has_key (new_date_hash)) {
                         data[new_date_hash].grab_focus_force ();
-                        data[new_date_hash].set_selected (true);
                         data[new_date_hash].set_state_flags (Gtk.StateFlags.FOCUSED, false);
 
                         return true;
@@ -173,24 +130,13 @@ namespace DateTimeIndicator {
             return false;
         }
 
-        public void reset_timer () {
-            has_scrolled = true;
-            Timeout.add (500, () => {
-                has_scrolled = false;
-
-                return false;
-            });
-        }
-
         private bool on_day_focus_in (Gdk.EventFocus event) {
             var day = inner_grid.get_focus_child ();
             if (day == null && !(day is Widgets.CalendarDay)) {
                 return false;
             }
 
-            if (selected_gridday != null) {
-                selected_gridday.set_selected (false);
-            }
+            ungrab_focus ();
 
             var selected_date = ((Widgets.CalendarDay) day).date;
             selected_gridday = day as Widgets.CalendarDay;
@@ -198,11 +144,9 @@ namespace DateTimeIndicator {
             day.set_state_flags (Gtk.StateFlags.FOCUSED, false);
             var calmodel = Models.CalendarModel.get_default ();
             var date_month = selected_date.get_month () - calmodel.month_start.get_month ();
-            var date_year = selected_date.get_year () - calmodel.month_start.get_year ();
 
-            if (date_month != 0 || date_year != 0) {
-                selection_changed (selected_date, false);
-                calmodel.change_month (date_month, date_year);
+            if (date_month != 0) {
+                change_month (date_month, selected_date);
             } else {
                 selection_changed (selected_date, true);
             }
@@ -210,10 +154,32 @@ namespace DateTimeIndicator {
             return false;
         }
 
+        public void ungrab_focus () {
+            if (selected_gridday != null) {
+                selected_gridday.set_selected (false);
+            }
+        }
+
+        public void set_focus_to_day (GLib.DateTime d) {
+            Widgets.CalendarDay? day = data[day_hash (d)];
+
+            if (day == null) {
+                return;
+            }
+
+            day.focus_in_event.disconnect (on_day_focus_in);
+            day.grab_focus_force ();
+            day.set_selected (true);
+            day.set_state_flags (Gtk.StateFlags.FOCUSED, false);
+            selected_gridday = day;
+            day.focus_in_event.connect (on_day_focus_in);
+        }
+
         public void set_focus_to_today () {
             if (grid_range == null) {
                 return;
             }
+
             Gee.List<GLib.DateTime> dates = grid_range.to_list ();
             for (int i = 0; i < dates.size; i++) {
                 var date = dates[i];
@@ -277,10 +243,6 @@ namespace DateTimeIndicator {
                     /* Still update_day to get the color of etc. right */
                     day = new Widgets.CalendarDay (new_date);
                     day.on_event_add.connect ((date) => on_event_add (date));
-                    day.scroll_event.connect ((event) => {
-                        scroll_event (event);
-                        return false;
-                    });
                     day.focus_in_event.connect (on_day_focus_in);
 
                     inner_grid.attach (day, col + 2, row);
@@ -289,17 +251,6 @@ namespace DateTimeIndicator {
 
                 update_day (day, new_date, month_start);
                 update_today_style (day, new_date, today);
-                if (selected_date != null && day.date.equal (selected_date)) {
-                    /* disabled the signal to avoid unnecessary signals and selected
-                    * the specified day from the new period */
-                    debug (@"focus selected day $selected_date");
-                    day.focus_in_event.disconnect (on_day_focus_in);
-                    day.grab_focus_force ();
-                    day.set_selected (true);
-                    day.set_state_flags (Gtk.StateFlags.FOCUSED, false);
-                    selected_gridday = day;
-                    day.focus_in_event.connect (on_day_focus_in);
-                }
 
                 col = (col + 1) % 7;
                 row = (col == 0) ? row + 1 : row;
@@ -350,7 +301,6 @@ namespace DateTimeIndicator {
             week_labels = new Gtk.Revealer[nr_of_weeks];
             for (int c = 0; c < nr_of_weeks; c++) {
                 var week_label = new Gtk.Label (next.get_week_of_year ().to_string ());
-                // week_label.margin_bottom = 6;
                 week_label.width_chars = 2;
                 week_label.get_style_context ().add_class (Granite.STYLE_CLASS_H4_LABEL);
 

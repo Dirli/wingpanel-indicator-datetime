@@ -109,7 +109,6 @@ namespace DateTimeIndicator {
 
                 var model = Models.CalendarModel.get_default ();
                 model.notify["month-start"].connect (() => {
-                    model.compute_ranges ();
 #if USE_EVO
                     event_listbox.clear_list ();
                     event_listbox.update_placeholder (calendar.selected_date);

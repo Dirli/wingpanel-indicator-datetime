@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2011–2018 elementary, Inc. (https://elementary.io)
+ * Copyright (c) 2011–2020 elementary, Inc. (https://elementary.io)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,8 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Authored by: Maxwell Barvian
- *              Corentin Noël <corentin@elementaryos.org>
  */
 
 namespace DateTimeIndicator {
@@ -24,19 +22,23 @@ namespace DateTimeIndicator {
         public signal void event_updates ();
         public signal void selection_changed (GLib.DateTime new_date);
 
-        public GLib.DateTime? selected_date { get; private set; }
+        public GLib.DateTime? selected_date { get; private set; default = null;}
         public GLib.Settings settings { get; construct; }
 
-        private Widgets.CalendarGrid calendar_grid;
-        private Gtk.Stack stack;
-        private Gtk.Container big_grid;
+        private Hdy.Carousel carousel;
+        private uint position;
+        private int rel_postion;
+        private GLib.DateTime start_month;
+        private Gtk.Label label;
+        private bool showtoday;
+
 
         public CalendarView (GLib.Settings clock_settings) {
             Object (settings: clock_settings);
         }
 
         construct {
-            var label = new Gtk.Label (new GLib.DateTime.now_local ().format (_("%OB, %Y")));
+            label = new Gtk.Label (new GLib.DateTime.now_local ().format (_("%OB, %Y")));
             label.hexpand = true;
             label.margin_start = 6;
             label.xalign = 0;
@@ -62,54 +64,115 @@ namespace DateTimeIndicator {
             box_buttons.add (center_button);
             box_buttons.add (right_button);
 
-            big_grid = create_big_grid ();
+            var calmodel = Models.CalendarModel.get_default ();
+            start_month = Util.get_start_of_month ();
 
-            stack = new Gtk.Stack ();
-            stack.add (big_grid);
-            stack.show_all ();
-            stack.expand = true;
+            var center_grid = create_grid ();
+            center_grid.set_range (calmodel.data_range, calmodel.month_start, selected_date);
+            center_grid.update_weeks (calmodel.data_range.first_dt, calmodel.num_weeks);
 
-            stack.notify["transition-running"].connect (() => {
-                if (stack.transition_running == false) {
-                    stack.get_children ().foreach ((child) => {
-                        if (child != stack.visible_child) {
-                            child.destroy ();
-                        }
-                    });
-                }
-            });
+            calmodel.change_month (-1);
+            var left_grid = create_grid ();
+            left_grid.set_range (calmodel.data_range, calmodel.month_start, selected_date);
+            left_grid.update_weeks (calmodel.data_range.first_dt, calmodel.num_weeks);
+
+            calmodel.change_month (2);
+            var right_grid = create_grid ();
+            right_grid.set_range (calmodel.data_range, calmodel.month_start, selected_date);
+            right_grid.update_weeks (calmodel.data_range.first_dt, calmodel.num_weeks);
+            calmodel.change_month (-1);
+
+            carousel = new Hdy.Carousel () {
+                interactive = true,
+                expand = true,
+                spacing = 15
+            };
+
+            carousel.add (left_grid);
+            carousel.add (center_grid);
+            carousel.add (right_grid);
+            carousel.scroll_to (center_grid);
+
+            position = 1;
+            rel_postion = 0;
+            showtoday = false;
+
+            carousel.show_all ();
 
             column_spacing = 6;
             row_spacing = 6;
             margin_start = margin_end = 10;
             attach (label, 0, 0);
             attach (box_buttons, 1, 0);
-            attach (stack, 0, 1, 2);
-
-            var model = Models.CalendarModel.get_default ();
-            model.notify["data-range"].connect (() => {
-                label.label = model.month_start.format (_("%OB, %Y"));
-
-                sync_with_model (selected_date != null);
-            });
+            attach (carousel, 0, 1, 2);
 
             left_button.clicked.connect (() => {
                 selected_date = selected_date.add_months (-1);
-                model.change_month (-1);
+                carousel.switch_child ((int) carousel.get_position () - 1, carousel.get_animation_duration ());
             });
 
             right_button.clicked.connect (() => {
                 selected_date = selected_date.add_months (1);
-                model.change_month (1);
+                carousel.switch_child ((int) carousel.get_position () + 1, carousel.get_animation_duration ());
             });
 
             center_button.clicked.connect (() => {
                 show_today ();
             });
+
+            carousel.page_changed.connect ((index) => {
+                calmodel.change_month (-rel_postion);
+                if (position > index) {
+                    rel_postion--;
+                    position--;
+                } else if (position < index) {
+                    rel_postion++;
+                    position++;
+                } else if (showtoday) {
+                    showtoday = false;
+                    rel_postion = 0;
+                    position = (int) carousel.get_position ();
+                    label.label = calmodel.month_start.format (_("%OB, %Y"));
+                    return;
+                } else {
+                    calmodel.change_month (rel_postion);
+                    return;
+                }
+
+                calmodel.change_month (rel_postion);
+                // selected_date = null;
+                selection_changed (selected_date);
+
+                var selected_grid = carousel.get_children ().nth_data (position);
+                if (selected_grid != null) {
+                    ((Widgets.CalendarGrid) selected_grid).set_focus_to_day (selected_date);
+                }
+
+                /* creates a new Grid, when the Hdy.Carousel is on it's first/last page*/
+                if (index + 1 == (int) carousel.get_n_pages ()) {
+                    calmodel.change_month (1);
+                    var grid = create_grid ();
+                    grid.set_range (calmodel.data_range, calmodel.month_start, selected_date);
+                    grid.update_weeks (calmodel.data_range.first_dt, calmodel.num_weeks);
+                    carousel.add (grid);
+                    calmodel.change_month (-1);
+
+                } else if (index == 0) {
+                    calmodel.change_month (-1);
+                    var grid = create_grid ();
+                    grid.set_range (calmodel.data_range, calmodel.month_start, selected_date);
+                    grid.update_weeks (calmodel.data_range.first_dt, calmodel.num_weeks);
+                    carousel.prepend (grid);
+                    calmodel.change_month (1);
+                    position++;
+                }
+
+                label.label = calmodel.month_start.format (_("%OB, %Y"));
+            });
         }
 
-        private Gtk.Container create_big_grid () {
-            calendar_grid = new Widgets.CalendarGrid (settings);
+        private Widgets.CalendarGrid create_grid () {
+            var calendar_grid = new Widgets.CalendarGrid (settings);
             calendar_grid.show_all ();
 
             calendar_grid.on_event_add.connect ((date) => {
@@ -126,20 +189,61 @@ namespace DateTimeIndicator {
                 }
             });
 
+            calendar_grid.change_month.connect ((m_relative, date) => {
+                selected_date = date;
+                carousel.switch_child ((int) carousel.get_position () + (m_relative), carousel.get_animation_duration ());
+            });
+
             return calendar_grid;
         }
 
         public void show_today () {
             var calmodel = Models.CalendarModel.get_default ();
+            showtoday = true;
             var today = Util.strip_time (new GLib.DateTime.now_local ());
             var start = Util.get_start_of_month (today);
             selected_date = today;
-            if (!start.equal (calmodel.month_start)) {
-                calmodel.month_start = start;
-            }
-            sync_with_model ();
 
-            calendar_grid.set_focus_to_today ();
+            if (start.equal (start_month)) {
+                position -= rel_postion;
+
+                var selected_grid = carousel.get_children ().nth_data (position);
+                if (selected_grid != null) {
+                    ((Widgets.CalendarGrid) selected_grid).set_focus_to_today ();
+                }
+
+                carousel.switch_child (position, carousel.get_animation_duration ());
+            } else {
+                /*reset Carousel if center_child != the grid of the month of today*/
+                carousel.no_show_all = true;
+                foreach (unowned Gtk.Widget grid in carousel.get_children ()) {
+                    carousel.remove (grid);
+                }
+                start_month = Util.get_start_of_month ();
+                calmodel.month_start = start_month;
+                var center_grid = create_grid ();
+                center_grid.set_range (calmodel.data_range, calmodel.month_start, selected_date);
+                center_grid.update_weeks (calmodel.data_range.first_dt, calmodel.num_weeks);
+                center_grid.set_focus_to_today ();
+
+                calmodel.change_month (-1);
+                var left_grid = create_grid ();
+                left_grid.set_range (calmodel.data_range, calmodel.month_start, selected_date);
+                left_grid.update_weeks (calmodel.data_range.first_dt, calmodel.num_weeks);
+
+                calmodel.change_month (2);
+                var right_grid = create_grid ();
+                right_grid.set_range (calmodel.data_range, calmodel.month_start, selected_date);
+                right_grid.update_weeks (calmodel.data_range.first_dt, calmodel.num_weeks);
+                calmodel.change_month (-1);
+
+                carousel.add (left_grid);
+                carousel.add (center_grid);
+                carousel.add (right_grid);
+                carousel.scroll_to (center_grid);
+                label.label = calmodel.month_start.format (_("%OB, %Y"));
+                carousel.no_show_all = false;
+            }
         }
 
         // TODO: As far as maya supports it use the Dbus Activation feature to run the calendar-app.
@@ -161,42 +265,19 @@ namespace DateTimeIndicator {
             }
         }
 
-        /* Sets the calendar widgets to the date range of the model */
-        private void sync_with_model (bool show_selected = false) {
-            var model = Models.CalendarModel.get_default ();
-            if (!show_selected && calendar_grid.grid_range != null && (model.data_range.equals (calendar_grid.grid_range) || calendar_grid.grid_range.first_dt.compare (model.data_range.first_dt) == 0)) {
-                calendar_grid.update_today ();
-                return; // nothing else to do
-            }
-
-            GLib.DateTime previous_first = null;
-            if (calendar_grid.grid_range != null)
-                previous_first = calendar_grid.grid_range.first_dt;
-
-            big_grid = create_big_grid ();
-            stack.add (big_grid);
-
-            calendar_grid.set_range (model.data_range, model.month_start, show_selected ? selected_date : null);
-            calendar_grid.update_weeks (model.data_range.first_dt, model.num_weeks);
-
-            if (previous_first != null) {
-                if (previous_first.compare (calendar_grid.grid_range.first_dt) == -1) {
-                    stack.transition_type = Gtk.StackTransitionType.SLIDE_LEFT;
-                } else {
-                    stack.transition_type = Gtk.StackTransitionType.SLIDE_RIGHT;
-                }
-            }
-
-            stack.set_visible_child (big_grid);
-        }
-
 #if USE_EVO
         public void add_event_dots (E.Source source, Gee.Collection<ECal.Component> events) {
-            calendar_grid.add_event_dots (source, events);
+            var selected_grid = carousel.get_children ().nth_data (position);
+            if (selected_grid != null) {
+                ((Widgets.CalendarGrid) selected_grid).add_event_dots (source, events);
+            }
         }
 
         public void remove_event_dots (E.Source source, Gee.Collection<ECal.Component> events) {
-            calendar_grid.remove_event_dots (source, events);
+            var selected_grid = carousel.get_children ().nth_data (position);
+            if (selected_grid != null) {
+                ((Widgets.CalendarGrid) selected_grid).remove_event_dots (source, events);
+            }
         }
 #endif
     }
