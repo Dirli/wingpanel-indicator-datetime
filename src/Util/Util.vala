@@ -69,21 +69,27 @@ namespace DateTimeIndicator.Util {
      */
     public TimeZone timezone_from_ical (ICal.Time date) {
         if (date.is_date ()) {
-            return new GLib.TimeZone.utc ();
+            return new GLib.TimeZone.local ();
         }
 
         var tzid = date.get_tzid ();
+        if (tzid == null) {
+            // In libical, null tzid means floating time
+            assert (date.get_timezone () == null);
+            return new GLib.TimeZone.local ();
+        }
+
         if (tzid != null) {
             /* Standard city names are usable directly by GLib, so we can bypass
-            * the ICal scaffolding completely and just return a new
-            * GLib.TimeZone here. This method also preserves all the timezone
-            * information, like going in/out of daylight savings, which parsing
-            * from UTC offset does not.
-            * Note, this can't recover from failure, since GLib.TimeZone
-            * constructor doesn't communicate failure information. This block
-            * will always return a GLib.TimeZone, which will be UTC if parsing
-            * fails for some reason.
-            */
+             * the ICal scaffolding completely and just return a new
+             * GLib.TimeZone here. This method also preserves all the timezone
+             * information, like going in/out of daylight savings, which parsing
+             * from UTC offset does not.
+             * Note, this can't recover from failure, since GLib.TimeZone
+             * constructor doesn't communicate failure information. This block
+             * will always return a GLib.TimeZone, which will be UTC if parsing
+             * fails for some reason.
+             */
             var prefix = "/freeassociation.sourceforge.net/";
             return new GLib.TimeZone (tzid.has_prefix (prefix) ? tzid.offset (prefix.length) : tzid);
         }
@@ -94,7 +100,7 @@ namespace DateTimeIndicator.Util {
         }
 
         if (timezone == null) {
-            return new GLib.TimeZone.utc ();
+            return new GLib.TimeZone.local ();
         }
 
         // Get UTC offset and format for GLib.TimeZone constructor
