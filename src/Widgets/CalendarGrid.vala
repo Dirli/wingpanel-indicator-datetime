@@ -39,11 +39,15 @@ namespace DateTimeIndicator {
         private Widgets.CalendarDay selected_gridday;
         private Gtk.Label[] header_labels;
         private Gtk.Revealer[] week_labels;
+        public Models.CalendarModel model {
+            get; construct set;
+        }
 
         public GLib.Settings settings { get; construct; }
 
-        public CalendarGrid (GLib.Settings clock_settings) {
-            Object (settings: clock_settings);
+        public CalendarGrid (GLib.Settings clock_settings, Models.CalendarModel cal_model) {
+            Object (settings: clock_settings,
+                    model: cal_model);
         }
 
         construct {
@@ -142,8 +146,7 @@ namespace DateTimeIndicator {
             selected_gridday = day as Widgets.CalendarDay;
             ((Widgets.CalendarDay) day).set_selected (true);
             day.set_state_flags (Gtk.StateFlags.FOCUSED, false);
-            var calmodel = Models.CalendarModel.get_default ();
-            var date_month = selected_date.get_month () - calmodel.month_start.get_month ();
+            var date_month = selected_date.get_month () - model.month_start.get_month ();
 
             if (date_month != 0) {
                 change_month (date_month, selected_date);
@@ -195,16 +198,16 @@ namespace DateTimeIndicator {
          * Sets the given range to be displayed in the grid. Note that the number of days
          * must remain the same.
          */
-        public void set_range (Util.DateRange new_range, GLib.DateTime month_start, GLib.DateTime? selected_date) {
+        public void set_range (Util.DateRange new_range, GLib.DateTime month_start) {
             var today = new GLib.DateTime.now_local ();
 
-            Gee.List<GLib.DateTime> old_dates;
+            Gee.List<GLib.DateTime> old_dates = grid_range == null ? new Gee.ArrayList<GLib.DateTime> () : grid_range.to_list ();
 
-            if (grid_range == null) {
-                old_dates = new Gee.ArrayList<GLib.DateTime> ();
-            } else {
-                old_dates = grid_range.to_list ();
-            }
+            // if (grid_range == null) {
+            //     old_dates = new Gee.ArrayList<GLib.DateTime> ();
+            // } else {
+            //     old_dates = grid_range.to_list ();
+            // }
 
             var new_dates = new_range.to_list ();
 
@@ -216,7 +219,7 @@ namespace DateTimeIndicator {
             /* Create new widgets for the new range */
 
             var date = Util.strip_time (today);
-            date = date.add_days (Models.CalendarModel.get_default ().week_starts_on - date.get_day_of_week ());
+            date = date.add_days (model.week_starts_on - date.get_day_of_week ());
             foreach (var label in header_labels) {
                 label.label = date.format ("%a");
                 date = date.add_days (1);

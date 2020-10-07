@@ -21,6 +21,8 @@ namespace DateTimeIndicator {
         public signal void events_updated (E.Source source, Gee.Collection<ECal.Component> events);
         public signal void events_removed (E.Source source, Gee.Collection<ECal.Component> events);
 
+        public Models.CalendarModel model {get; set;}
+
         public HashTable<E.Source, Gee.TreeMultiMap<string, ECal.Component>> source_events { get; private set; }
 
         private E.SourceRegistry registry { get; private set; }
@@ -91,8 +93,6 @@ namespace DateTimeIndicator {
         }
 
         private void load_source (E.Source source) {
-            var model = Models.CalendarModel.get_default ();
-
             /* create empty source-event map */
             var events = new Gee.TreeMultiMap<string, ECal.Component> (
                 (GLib.CompareDataFunc<ECal.Component>?) GLib.strcmp,
@@ -167,7 +167,6 @@ namespace DateTimeIndicator {
             debug (@"Received $(objects.length()) added event(s) for source '%s'", source.dup_display_name ());
             var events = source_events.get (source);
             var added_events = new Gee.ArrayList<ECal.Component> ((Gee.EqualDataFunc<ECal.Component>?) Util.calcomponent_equal_func);
-            var model = Models.CalendarModel.get_default ();
             objects.foreach ((comp) => {
                 unowned string uid = comp.get_uid ();
 #if E_CAL_2_0

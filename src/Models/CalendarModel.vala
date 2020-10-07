@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 elementary, Inc. (https://elementary.io)
+ * Copyright (c) 2011-2020 elementary, Inc. (https://elementary.io)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public
@@ -27,7 +27,7 @@ namespace DateTimeIndicator {
         public Util.DateRange data_range { get; private set; }
 
         /* The first day of the month */
-        public GLib.DateTime month_start { get; set; }
+        public GLib.DateTime month_start { get; construct set; }
 
         /* The number of weeks to show in this model */
         public int num_weeks { get; private set; default = 6; }
@@ -35,16 +35,8 @@ namespace DateTimeIndicator {
         /* The start of week, ie. Monday=1 or Sunday=7 */
         public GLib.DateWeekday week_starts_on { get; set; }
 
-        private static CalendarModel? calendar_model = null;
-
-        public static CalendarModel get_default () {
-            lock (calendar_model) {
-                if (calendar_model == null) {
-                    calendar_model = new CalendarModel ();
-                }
-            }
-
-            return calendar_model;
+        public CalendarModel (GLib.DateTime? m_start) {
+            Object (month_start: m_start ?? Util.get_start_of_month ());
         }
 
         construct {
@@ -53,19 +45,6 @@ namespace DateTimeIndicator {
                 week_starts_on = (GLib.DateWeekday) (week_start - 1);
             }
 
-            month_start = Util.get_start_of_month ();
-            compute_ranges ();
-        }
-
-        public void change_month (int m_relative) {
-            month_start = month_start.add_months (m_relative);
-
-            compute_ranges ();
-        }
-
-        /* --- Helper Methods ---// */
-
-        public void compute_ranges () {
             var month_end = month_start.add_full (0, 1, -1);
 
             int dow = month_start.get_day_of_week ();
@@ -102,6 +81,10 @@ namespace DateTimeIndicator {
             num_weeks = data_range.to_list ().size / 7;
 
             debug (@"Date ranges: ($data_range_first <= $month_start < $month_end <= $data_range_last)");
+        }
+
+        public GLib.DateTime get_relative_position (int m_relative) {
+            return month_start.add_months (m_relative);
         }
     }
 }

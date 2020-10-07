@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2016 elementary LLC. (https://elementary.io)
+ * Copyright (c) 2011-2020 elementary LLC. (https://elementary.io)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public
@@ -71,6 +71,7 @@ namespace DateTimeIndicator {
 
 #if USE_EVO
                 event_manager = new Services.EventsManager ();
+                event_manager.model = calendar.current_model;
                 event_manager.events_updated.connect (update_events_model);
                 event_manager.events_added.connect ((source, events) => {
                     calendar.add_event_dots (source, events);
@@ -105,16 +106,15 @@ namespace DateTimeIndicator {
                         idle_update_events ();
                     });
                 });
-#endif
 
-                var model = Models.CalendarModel.get_default ();
-                model.notify["month-start"].connect (() => {
-#if USE_EVO
+                calendar.notify["current-model"].connect (() => {
+                    event_manager.model = calendar.current_model;
+
                     event_listbox.clear_list ();
                     event_listbox.update_placeholder (calendar.selected_date);
                     event_manager.load_all_sources ();
-#endif
                 });
+#endif
 
                 settings_button.clicked.connect (() => {
                     try {
