@@ -1,52 +1,52 @@
-project(
+project (
     'datetime',
     'vala', 'c',
-    version: '2.3.1'
+    version: '2.4.0'
 )
 
-i18n = import('i18n')
-gnome = import('gnome')
+i18n = import ('i18n')
+gnome = import ('gnome')
 
-gettext_name = meson.project_name() + '-indicator'
+gettext_name = meson.project_name () + '-indicator'
 
-prefix = get_option('prefix')
-libdir = join_paths(prefix, get_option('libdir'))
+prefix = get_option ('prefix')
+libdir = join_paths (prefix, get_option ('libdir'))
 
-add_global_arguments('-DGETTEXT_PACKAGE="@0@"'.format(gettext_name), language:'c')
-add_project_arguments(['--vapidir', join_paths(meson.current_source_dir(), 'vapi')], language: 'vala')
+add_global_arguments ('-DGETTEXT_PACKAGE="@0@"'.format (gettext_name), language:'c')
+add_project_arguments (['--vapidir', join_paths (meson.current_source_dir (), 'vapi')], language: 'vala')
 
-gresource = gnome.compile_resources(
+gresource = gnome.compile_resources (
     'gresource',
-    join_paths('data', 'datetime.gresource.xml'),
+    join_paths ('data', 'datetime.gresource.xml'),
     source_dir: 'data'
 )
 
-wingpanel_dep = dependency('wingpanel-2.0')
-wingpanel_indicatorsdir = wingpanel_dep.get_pkgconfig_variable('indicatorsdir', define_variable: ['libdir', libdir])
+wingpanel_dep = dependency ('wingpanel-2.0')
+wingpanel_indicatorsdir = wingpanel_dep.get_pkgconfig_variable ('indicatorsdir', define_variable: ['libdir', libdir])
 
 deps = [
-    dependency('glib-2.0'),
-    dependency('gobject-2.0'),
-    dependency('granite'),
-    dependency('gtk+-3.0'),
-    dependency('libhandy-1'),
+    dependency ('glib-2.0'),
+    dependency ('gobject-2.0'),
+    dependency ('granite'),
+    dependency ('gtk+-3.0'),
+    dependency ('libhandy-1'),
     wingpanel_dep,
-    meson.get_compiler('vala').find_library('posix')
+    meson.get_compiler ('vala').find_library ('posix')
 ]
 
 opt_files = []
 
-if get_option('evo')
+if get_option ('evo')
     libecal_dep = dependency ('libecal-2.0', required: false)
-    if libecal_dep.found()
-        deps += dependency('libical-glib')
+    if libecal_dep.found ()
+        deps += dependency ('libical-glib')
         deps += libecal_dep
-        add_project_arguments('--define=E_CAL_2_0', language: 'vala')
-        add_project_arguments('-DLIBICAL_GLIB_UNSTABLE_API=1', language: 'c')
+        add_project_arguments ('--define=E_CAL_2_0', language: 'vala')
+        add_project_arguments ('-DLIBICAL_GLIB_UNSTABLE_API=1', language: 'c')
     else
-        deps += dependency('libecal-1.2', version: '>=3.8.0')
-        deps += dependency('libical')
-        add_project_arguments('--vapidir', join_paths(meson.current_source_dir(), 'vapi'), language: 'vala')
+        deps += dependency ('libecal-1.2', version: '>=3.8.0')
+        deps += dependency ('libical')
+        add_project_arguments ('--vapidir', join_paths (meson.current_source_dir (), 'vapi'), language: 'vala')
     endif
 
     deps += dependency ('libedataserver-1.2')
@@ -55,12 +55,11 @@ if get_option('evo')
         'src/Widgets/EventsListBox.vala',
         'src/Services/EventsManager.vala',
     )
-    add_project_arguments('--define=USE_EVO', language: 'vala')
+    add_project_arguments ('--define=USE_EVO', language: 'vala')
 endif
 
-
-shared_module(
-    meson.project_name(),
+shared_module (
+    meson.project_name (),
     gresource,
     'src/Indicator.vala',
     'src/Util/DateIterator.vala',
@@ -78,7 +77,7 @@ shared_module(
     install_dir : wingpanel_indicatorsdir,
 )
 
-subdir('data')
-subdir('po')
+subdir ('data')
+subdir ('po')
 
-meson.add_install_script('meson/post_install.py')
+meson.add_install_script ('meson/post_install.py')
