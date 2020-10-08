@@ -38,7 +38,6 @@ namespace DateTimeIndicator {
         }
 
         construct {
-            // label = new Gtk.Label (new GLib.DateTime.now_local ().format (_("%OB, %Y")));
             label = new Gtk.Label ("");
             label.hexpand = true;
             label.margin_start = 6;
@@ -93,65 +92,62 @@ namespace DateTimeIndicator {
                 show_today ();
             });
 
-            carousel.page_changed.connect ((index) => {
-                var selected_grid = carousel.get_children ().nth_data (index);
-                if (selected_grid == null) {
-                    return;
+            carousel.page_changed.connect (on_page_changed);
+        }
+
+        private void on_page_changed (uint index) {
+            var selected_grid = carousel.get_children ().nth_data (index);
+            if (selected_grid == null) {
+                return;
+            }
+
+            current_model = ((Widgets.CalendarGrid) selected_grid).model;
+
+            label.label = current_model.month_start.format (_("%OB, %Y"));
+
+            var current_month = current_model.month_start.get_month ();
+            if (selected_date.get_month () != current_month) {
+                int inc = selected_date.add_months (1).get_month () == current_month ? 1 :
+                          selected_date.add_months (-1).get_month () == current_month ? -1:
+                          0;
+
+                if (inc != 0) {
+                    var prev_grid = carousel.get_children ().nth_data (1);
+                    if (prev_grid != null) {
+                        ((Widgets.CalendarGrid) prev_grid).ungrab_focus ();
+                    }
+                    selected_date = selected_date.add_months (inc);
                 }
+            }
 
-                var old_month = current_model.month_start;
+            if (index > 1) {
+                var next_month = current_model.get_relative_position (1);
+                var right_grid = create_grid (new Models.CalendarModel (next_month));
+                right_grid.set_range (right_grid.model.data_range, right_grid.model.month_start);
+                right_grid.update_weeks (right_grid.model.data_range.first_dt, right_grid.model.num_weeks);
 
-                current_model = ((Widgets.CalendarGrid) selected_grid).model;
+                carousel.add (right_grid);
 
-                label.label = current_model.month_start.format (_("%OB, %Y"));
-
-                var current_month = current_model.month_start.get_month ();
-                if (selected_date.get_month () != current_month) {
-                    int inc = 0;
-                    if (selected_date.add_months (1).get_month () == current_month) {
-                        inc = 1;
-                    } else if (selected_date.add_months (-1).get_month () == current_month) {
-                        inc = -1;
-                    }
-
-                    if (inc != 0) {
-                        var prev_grid = carousel.get_children ().nth_data (1);
-                        if (prev_grid != null) {
-                            ((Widgets.CalendarGrid) prev_grid).ungrab_focus ();
-                        }
-                        selected_date = selected_date.add_months (inc);
-                    }
+                Gtk.Widget? first_el = carousel.get_children ().first ().data;
+                if (first_el != null) {
+                    carousel.remove (first_el);
                 }
+            } else if (index < 1) {
+                var prev_month = current_model.get_relative_position (-1);
+                var left_grid = create_grid (new Models.CalendarModel (prev_month));
+                left_grid.set_range (left_grid.model.data_range, left_grid.model.month_start);
+                left_grid.update_weeks (left_grid.model.data_range.first_dt, left_grid.model.num_weeks);
 
-                if (index > 1) {
-                    var next_month = current_model.get_relative_position (1);
-                    var right_grid = create_grid (new Models.CalendarModel (next_month));
-                    right_grid.set_range (right_grid.model.data_range, right_grid.model.month_start);
-                    right_grid.update_weeks (right_grid.model.data_range.first_dt, right_grid.model.num_weeks);
+                carousel.prepend (left_grid);
 
-                    carousel.add (right_grid);
-
-                    Gtk.Widget? first_el = carousel.get_children ().first ().data;
-                    if (first_el != null) {
-                        carousel.remove (first_el);
-                    }
-                } else if (index < 1) {
-                    var prev_month = current_model.get_relative_position (-1);
-                    var left_grid = create_grid (new Models.CalendarModel (prev_month));
-                    left_grid.set_range (left_grid.model.data_range, left_grid.model.month_start);
-                    left_grid.update_weeks (left_grid.model.data_range.first_dt, left_grid.model.num_weeks);
-
-                    carousel.prepend (left_grid);
-
-                    Gtk.Widget? last_el = carousel.get_children ().last ().data;
-                    if (last_el != null) {
-                        carousel.remove (last_el);
-                    }
+                Gtk.Widget? last_el = carousel.get_children ().last ().data;
+                if (last_el != null) {
+                    carousel.remove (last_el);
                 }
+            }
 
-                selection_changed (selected_date);
-                ((Widgets.CalendarGrid) selected_grid).set_focus_to_day (selected_date);
-            });
+            selection_changed (selected_date);
+            ((Widgets.CalendarGrid) selected_grid).set_focus_to_day (selected_date);
         }
 
         private Widgets.CalendarGrid create_grid (Models.CalendarModel calmodel) {
@@ -193,7 +189,6 @@ namespace DateTimeIndicator {
 
                 return;
             }
-
 
             if (start.equal(current_model.get_relative_position (-1))) {
                 carousel.switch_child ((int) carousel.get_position () - 1, carousel.get_animation_duration ());

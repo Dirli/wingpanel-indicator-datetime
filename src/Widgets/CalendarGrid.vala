@@ -109,10 +109,10 @@ namespace DateTimeIndicator {
              || event.keyval == Gdk.keyval_from_name ("Right")
              || event.keyval == Gdk.keyval_from_name ("Up")
              || event.keyval == Gdk.keyval_from_name ("Down")) {
-                var new_date = selected_gridday.date.add_days (event.keyval == Gdk.keyval_from_name ("Right")
-                                                               ? 1 : event.keyval == Gdk.keyval_from_name ("Left")
-                                                               ? -1 : event.keyval == Gdk.keyval_from_name ("Up")
-                                                               ? -7 : 7);
+                var new_date = selected_gridday.date.add_days (event.keyval == Gdk.keyval_from_name ("Right") ? 1 :
+                                                               event.keyval == Gdk.keyval_from_name ("Left") ? -1 :
+                                                               event.keyval == Gdk.keyval_from_name ("Up") ? -7 :
+                                                               7);
                 var date_month = new_date.get_month () - selected_gridday.date.get_month ();
 
                 if (date_month != 0) {
