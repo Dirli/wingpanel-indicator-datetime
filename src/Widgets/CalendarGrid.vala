@@ -30,7 +30,7 @@ namespace DateTimeIndicator {
         /*
          * Event emitted when the day is double clicked or the ENTER key is pressed.
          */
-        public signal void on_event_add (GLib.DateTime? date);
+        public signal void on_event_add (GLib.DateTime date);
         public signal void change_month (int m_relative, GLib.DateTime date);
         public signal void selection_changed (GLib.DateTime new_date, bool up);
 
@@ -88,11 +88,6 @@ namespace DateTimeIndicator {
         private bool on_key_press (Gdk.EventKey event) {
             if (event.keyval == Gdk.keyval_from_name ("Return") ) {
                 on_event_add (selected_gridday.date);
-                return true;
-            }
-
-            if (event.keyval == Gdk.keyval_from_name ("Esc") ) {
-                on_event_add (null);
                 return true;
             }
 

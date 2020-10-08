@@ -44,6 +44,8 @@ namespace DateTimeIndicator {
             label.xalign = 0;
             label.width_chars = 13;
 
+            key_press_event.connect (on_key_press);
+
             var provider = new Gtk.CssProvider ();
             provider.load_from_resource ("/io/elementary/desktop/wingpanel/datetime/ControlHeader.css");
 
@@ -70,7 +72,7 @@ namespace DateTimeIndicator {
                 spacing = 15
             };
 
-            init_default_carousel ();
+            init_carousel (null);
 
             carousel.show_all ();
 
@@ -93,6 +95,27 @@ namespace DateTimeIndicator {
             });
 
             carousel.page_changed.connect (on_page_changed);
+        }
+
+        private bool on_key_press (Gdk.EventKey event) {
+            if (event.keyval == Gdk.keyval_from_name ("Home") ) {
+                show_today ();
+                return true;
+            }
+
+            if (event.keyval == Gdk.keyval_from_name ("KP_Add") ) {
+                selected_date = selected_date.add_years (1);
+                reset_carousel (selected_date);
+                return true;
+            }
+
+            if (event.keyval == Gdk.keyval_from_name ("KP_Subtract") ) {
+                selected_date = selected_date.add_years (-1);
+                reset_carousel (selected_date);
+                return true;
+            }
+
+            return false;
         }
 
         private void on_page_changed (uint index) {
@@ -155,9 +178,8 @@ namespace DateTimeIndicator {
             calendar_grid.show_all ();
 
             calendar_grid.on_event_add.connect ((date) => {
-                if (date != null) {
-                    show_date_in_maya (date);
-                }
+                show_date_in_maya (date);
+
                 day_double_click ();
             });
 
@@ -201,17 +223,21 @@ namespace DateTimeIndicator {
             }
 
             /*reset Carousel*/
+            reset_carousel (null);
+        }
+
+        private void reset_carousel (GLib.DateTime? date) {
             carousel.no_show_all = true;
             foreach (unowned Gtk.Widget grid in carousel.get_children ()) {
                 carousel.remove (grid);
             }
 
-            init_default_carousel ();
+            init_carousel (date != null ? Util.get_start_of_month (date) : null);
             carousel.no_show_all = false;
         }
 
-        public void init_default_carousel () {
-            current_model = new Models.CalendarModel (null);
+        private void init_carousel (GLib.DateTime? date) {
+            current_model = new Models.CalendarModel (date);
             label.label = current_model.month_start.format (_("%OB, %Y"));
 
             var center_grid = create_grid (current_model);
