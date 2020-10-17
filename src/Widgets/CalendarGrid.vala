@@ -54,12 +54,25 @@ namespace DateTimeIndicator {
             inner_grid = new Gtk.Grid ();
             inner_grid.hexpand = true;
 
+            var label = new Gtk.Label (model.month_start.format (_("%OB, %Y")));
+            label.hexpand = true;
+            label.halign = Gtk.Align.CENTER;
+
+            var provider = new Gtk.CssProvider ();
+            provider.load_from_resource ("/io/elementary/desktop/wingpanel/datetime/ControlHeader.css");
+
+            var label_style_context = label.get_style_context ();
+            label_style_context.add_class ("header-label");
+            label_style_context.add_provider (provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+
+            inner_grid.attach (label, 0, 0, 9, 1);
+
             header_labels = new Gtk.Label[7];
             for (int c = 0; c < 7; c++) {
                 header_labels[c] = new Gtk.Label (null);
                 header_labels[c].get_style_context ().add_class (Granite.STYLE_CLASS_H4_LABEL);
 
-                inner_grid.attach (header_labels[c], c + 2, 0);
+                inner_grid.attach (header_labels[c], c + 2, 1);
             }
 
             can_focus = true;
@@ -72,7 +85,7 @@ namespace DateTimeIndicator {
             week_sep_revealer.transition_type = Gtk.RevealerTransitionType.SLIDE_LEFT;
             week_sep_revealer.add (week_sep);
 
-            inner_grid.attach (week_sep_revealer, 1, 1, 1, 6);
+            inner_grid.attach (week_sep_revealer, 1, 2, 1, 6);
 
             settings.bind ("show-weeks", week_sep_revealer, "reveal-child", GLib.SettingsBindFlags.DEFAULT);
 
@@ -221,7 +234,7 @@ namespace DateTimeIndicator {
             }
 
             int i = 0;
-            int col = 0, row = 1;
+            int col = 0, row = 2;
 
             for (i = 0; i < new_dates.size; i++) {
                 var new_date = new_dates[i];
@@ -309,7 +322,7 @@ namespace DateTimeIndicator {
 
                 settings.bind ("show-weeks", week_labels[c], "reveal-child", GLib.SettingsBindFlags.DEFAULT);
 
-                inner_grid.attach (week_labels[c], 0, c + 1);
+                inner_grid.attach (week_labels[c], 0, c + 2);
 
                 next = next.add_weeks (1);
             }

@@ -27,7 +27,6 @@ namespace DateTimeIndicator {
 
         public Models.CalendarModel current_model {get; private set;}
         private Hdy.Carousel carousel;
-        private Gtk.Label label;
 
         public CalendarView (GLib.Settings clock_settings) {
             Object (settings: clock_settings,
@@ -38,29 +37,19 @@ namespace DateTimeIndicator {
         }
 
         construct {
-            label = new Gtk.Label ("");
-            label.hexpand = true;
-            label.margin_start = 6;
-            label.xalign = 0;
-            label.width_chars = 13;
-
             key_press_event.connect (on_key_press);
 
             var provider = new Gtk.CssProvider ();
             provider.load_from_resource ("/io/elementary/desktop/wingpanel/datetime/ControlHeader.css");
-
-            var label_style_context = label.get_style_context ();
-            label_style_context.add_class ("header-label");
-            label_style_context.add_provider (provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
 
             var left_button = new Gtk.Button.from_icon_name ("pan-start-symbolic");
             var center_button = new Gtk.Button.from_icon_name ("office-calendar-symbolic");
             center_button.tooltip_text = _("Go to today's date");
             var right_button = new Gtk.Button.from_icon_name ("pan-end-symbolic");
 
-            var box_buttons = new Gtk.Grid ();
-            box_buttons.margin_end = 6;
-            box_buttons.valign = Gtk.Align.CENTER;
+            var box_buttons = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 0);
+            box_buttons.halign = Gtk.Align.CENTER;
+            box_buttons.valign = Gtk.Align.START;
             box_buttons.get_style_context ().add_class (Gtk.STYLE_CLASS_LINKED);
             box_buttons.add (left_button);
             box_buttons.add (center_button);
@@ -76,9 +65,8 @@ namespace DateTimeIndicator {
 
             carousel.show_all ();
 
-            attach (label, 0, 0);
-            attach (box_buttons, 1, 0);
-            attach (carousel, 0, 1, 2);
+            attach (box_buttons, 0, 0);
+            attach (carousel, 0, 1);
 
             left_button.clicked.connect (() => {
                 selected_date = selected_date.add_months (-1);
@@ -125,8 +113,6 @@ namespace DateTimeIndicator {
             }
 
             current_model = ((Widgets.CalendarGrid) selected_grid).model;
-
-            label.label = current_model.month_start.format (_("%OB, %Y"));
 
             var current_month = current_model.month_start.get_month ();
             if (selected_date.get_month () != current_month) {
@@ -238,7 +224,6 @@ namespace DateTimeIndicator {
 
         private void init_carousel (GLib.DateTime? date) {
             current_model = new Models.CalendarModel (date);
-            label.label = current_model.month_start.format (_("%OB, %Y"));
 
             var center_grid = create_grid (current_model);
             center_grid.set_range (current_model.data_range, current_model.month_start);
@@ -260,7 +245,6 @@ namespace DateTimeIndicator {
             carousel.scroll_to (center_grid);
         }
 
-        // TODO: As far as maya supports it use the Dbus Activation feature to run the calendar-app.
         public void show_date_in_maya (GLib.DateTime date) {
             var command = "io.elementary.calendar --show-day %s".printf (date.format ("%F"));
 
