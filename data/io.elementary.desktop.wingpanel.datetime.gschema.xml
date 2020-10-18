@@ -11,6 +11,11 @@
             <summary>Show week numbers.</summary>
             <description>If this is set to true, week numbers will be shown in the calendar.</description>
         </key>
+        <key type="b" name="show-nav">
+            <default>true</default>
+            <summary>Show navigation buttons.</summary>
+            <description>If this is set to true, navigation buttons will be shown in the calendar.</description>
+        </key>
         <key name="clock-format" enum="io.elementary.desktop.wingpanel.datetime.clock-formats">
             <default>"12h"</default>
             <summary>(DEPRECATED) Whether the clock displays in 12h, 24h, or ISO format</summary>

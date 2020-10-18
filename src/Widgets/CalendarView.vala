@@ -55,6 +55,10 @@ namespace DateTimeIndicator {
             box_buttons.add (center_button);
             box_buttons.add (right_button);
 
+            var box_buttons_revealer = new Gtk.Revealer ();
+            box_buttons_revealer.transition_type = Gtk.RevealerTransitionType.SLIDE_UP;
+            box_buttons_revealer.add (box_buttons);
+
             carousel = new Hdy.Carousel () {
                 interactive = true,
                 expand = true,
@@ -65,8 +69,10 @@ namespace DateTimeIndicator {
 
             carousel.show_all ();
 
-            attach (box_buttons, 0, 0);
+            attach (box_buttons_revealer, 0, 0);
             attach (carousel, 0, 1);
+
+            settings.bind ("show-nav", box_buttons_revealer, "reveal-child", GLib.SettingsBindFlags.DEFAULT);
 
             left_button.clicked.connect (() => {
                 selected_date = selected_date.add_months (-1);
