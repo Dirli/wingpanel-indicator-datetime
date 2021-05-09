@@ -50,12 +50,16 @@ namespace DateTimeIndicator {
         }
 
         construct {
-            unowned Gtk.StyleContext style_context = get_style_context ();
-            style_context.add_provider (provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
-            style_context.add_class ("circular");
+            // unowned Gtk.StyleContext style_context = get_style_context ();
+            // style_context.add_provider (provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+            // style_context.add_class ("circular");
 
             label = new Gtk.Label (null);
-            label.margin_top = 6;
+            // label.margin_top = 6;
+
+            unowned Gtk.StyleContext label_style_context = label.get_style_context ();
+            label_style_context.add_provider (provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+            label_style_context.add_class ("circular");
 
             event_grid = new Gtk.Grid ();
             event_grid.halign = Gtk.Align.CENTER;
@@ -69,9 +73,13 @@ namespace DateTimeIndicator {
             can_focus = true;
             events |= Gdk.EventMask.BUTTON_PRESS_MASK;
 
-            set_size_request (35, 35);
+            // set_size_request (35, 35);
+            set_css_name ("grid-day");
             halign = Gtk.Align.CENTER;
             hexpand = true;
+
+            get_style_context ().add_provider (provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+
             add (grid);
             show_all ();
 
