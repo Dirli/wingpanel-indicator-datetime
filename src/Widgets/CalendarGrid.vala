@@ -56,7 +56,9 @@ namespace DateTimeIndicator {
 
             var label = new Gtk.Label (model.month_start.format (_("%OB, %Y")));
             label.hexpand = true;
+            label.margin_start = 6;
             label.halign = Gtk.Align.CENTER;
+            label.width_chars = 18;
 
             var provider = new Gtk.CssProvider ();
             provider.load_from_resource ("/io/elementary/desktop/wingpanel/datetime/ControlHeader.css");
