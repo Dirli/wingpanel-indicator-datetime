@@ -32,6 +32,7 @@ namespace DateTimeIndicator {
 
         private Gtk.Grid grid;
         private Gtk.Image event_image;
+        private Gtk.Label name_label;
         private Gtk.Label time_label;
 
         public EventRow (GLib.DateTime date, ICal.Component component, E.Source source) {
@@ -75,7 +76,7 @@ namespace DateTimeIndicator {
             unowned Gtk.StyleContext event_image_context = event_image.get_style_context ();
             event_image_context.add_provider (css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
 
-            var name_label = new Gtk.Label (component.get_summary ());
+            name_label = new Gtk.Label (component.get_summary ());
             name_label.hexpand = true;
             name_label.ellipsize = Pango.EllipsizeMode.END;
             name_label.lines = 3;
@@ -129,6 +130,12 @@ namespace DateTimeIndicator {
 
             unowned Gtk.StyleContext event_image_context = event_image.get_style_context ();
             event_image_context.add_provider (provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+
+            unowned Gtk.StyleContext name_label_context = name_label.get_style_context ();
+            name_label_context.add_provider (provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+
+            unowned Gtk.StyleContext time_label_context = time_label.get_style_context ();
+            time_label_context.add_provider (provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
         }
     }
 }
