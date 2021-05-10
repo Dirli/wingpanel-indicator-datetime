@@ -209,16 +209,11 @@ namespace DateTimeIndicator {
         public void set_range (Util.DateRange new_range, GLib.DateTime month_start) {
             var today = new GLib.DateTime.now_local ();
 
-            Gee.List<GLib.DateTime> old_dates = grid_range == null ? new Gee.ArrayList<GLib.DateTime> () : grid_range.to_list ();
-
-            // if (grid_range == null) {
-            //     old_dates = new Gee.ArrayList<GLib.DateTime> ();
-            // } else {
-            //     old_dates = grid_range.to_list ();
-            // }
+            Gee.List<GLib.DateTime> old_dates = grid_range == null ?
+                                                new Gee.ArrayList<GLib.DateTime> () :
+                                                grid_range.to_list ();
 
             var new_dates = new_range.to_list ();
-
             var data_new = new Gee.HashMap<uint, Widgets.CalendarDay> ();
 
             /* Assert that a valid number of weeks should be displayed */
@@ -253,7 +248,9 @@ namespace DateTimeIndicator {
                 if (day == null) {
                     /* Still update_day to get the color of etc. right */
                     day = new Widgets.CalendarDay (new_date);
-                    day.on_event_add.connect ((date) => on_event_add (date));
+                    day.on_event_add.connect ((date) => {
+                        on_event_add (date);
+                    });
                     day.focus_in_event.connect (on_day_focus_in);
 
                     inner_grid.attach (day, col + 2, row);

@@ -50,10 +50,6 @@ namespace DateTimeIndicator {
         }
 
         construct {
-            // unowned Gtk.StyleContext style_context = get_style_context ();
-            // style_context.add_provider (provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
-            // style_context.add_class ("circular");
-
             label = new Gtk.Label (null);
             // label.margin_top = 6;
 
@@ -73,7 +69,6 @@ namespace DateTimeIndicator {
             can_focus = true;
             events |= Gdk.EventMask.BUTTON_PRESS_MASK;
 
-            // set_size_request (35, 35);
             set_css_name ("grid-day");
             halign = Gtk.Align.CENTER;
             hexpand = true;
@@ -201,8 +196,10 @@ namespace DateTimeIndicator {
         }
 
         private bool on_button_press (Gdk.EventButton event) {
-            if (event.type == Gdk.EventType.2BUTTON_PRESS && event.button == Gdk.BUTTON_PRIMARY)
+            if (event.type == Gdk.EventType.2BUTTON_PRESS && event.button == Gdk.BUTTON_PRIMARY) {
                 on_event_add (date);
+            }
+
             valid_grab = true;
             grab_focus ();
             return false;

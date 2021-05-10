@@ -257,6 +257,11 @@ namespace DateTimeIndicator {
             try {
                 var appinfo = AppInfo.create_from_commandline (command, null, AppInfoCreateFlags.NONE);
                 appinfo.launch_uris (null, null);
+
+                var selected_grid = carousel.get_children ().nth_data (1);
+                if (selected_grid != null) {
+                    ((Widgets.CalendarGrid) selected_grid).ungrab_focus ();
+                }
             } catch (GLib.Error e) {
                 var dialog = new Granite.MessageDialog.with_image_from_icon_name (
                     _("Unable To Launch Calendar"),
