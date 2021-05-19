@@ -25,6 +25,18 @@ namespace DateTimeIndicator {
         public GLib.DateTime? selected_date { get; private set; default = null;}
         public GLib.Settings settings { get; construct; }
 
+        private Widgets.CalendarDay? _current_today = null;
+        public Widgets.CalendarDay? current_today {
+            set {
+                unset_today_style ();
+                _current_today = value;
+                set_today_style ();
+            }
+            get {
+                return _current_today;
+            }
+        }
+
         public Models.CalendarModel current_model {get; private set;}
         private Hdy.Carousel carousel;
 
@@ -138,8 +150,6 @@ namespace DateTimeIndicator {
             if (index > 1) {
                 var next_month = current_model.get_relative_position (1);
                 var right_grid = create_grid (new Models.CalendarModel (next_month));
-                right_grid.set_range (right_grid.model.data_range, right_grid.model.month_start);
-                right_grid.update_weeks (right_grid.model.data_range.first_dt, right_grid.model.num_weeks);
 
                 carousel.add (right_grid);
 
@@ -150,8 +160,6 @@ namespace DateTimeIndicator {
             } else if (index < 1) {
                 var prev_month = current_model.get_relative_position (-1);
                 var left_grid = create_grid (new Models.CalendarModel (prev_month));
-                left_grid.set_range (left_grid.model.data_range, left_grid.model.month_start);
-                left_grid.update_weeks (left_grid.model.data_range.first_dt, left_grid.model.num_weeks);
 
                 carousel.prepend (left_grid);
 
@@ -187,6 +195,13 @@ namespace DateTimeIndicator {
                 carousel.switch_child ((int) carousel.get_position () + (m_relative), carousel.get_animation_duration ());
             });
 
+            var _today = calendar_grid.set_range (calendar_grid.model.data_range, calendar_grid.model.month_start);
+            calendar_grid.update_weeks (calendar_grid.model.data_range.first_dt, calendar_grid.model.num_weeks);
+
+            if (_today != null) {
+                current_today = _today;
+            }
+
             return calendar_grid;
         }
 
@@ -196,15 +211,22 @@ namespace DateTimeIndicator {
             selected_date = today;
 
             if (start.equal (current_model.month_start)) {
-                var selected_grid = carousel.get_children ().nth_data (1);
+                Widgets.CalendarGrid selected_grid = carousel.get_children ().nth_data (1) as Widgets.CalendarGrid;
                 if (selected_grid != null) {
-                    ((Widgets.CalendarGrid) selected_grid).set_focus_to_today ();
+                    selected_grid.set_focus_to_today (today);
+
+                    if (current_today != null && !today.equal (Util.strip_time (Util.strip_time (current_today.date)))) {
+                        var _today = selected_grid.get_day (today);
+                        if (_today != null) {
+                            current_today = _today;
+                        }
+                    }
                 }
 
                 return;
             }
 
-            if (start.equal(current_model.get_relative_position (-1))) {
+            if (start.equal (current_model.get_relative_position (-1))) {
                 carousel.switch_child ((int) carousel.get_position () - 1, carousel.get_animation_duration ());
                 return;
             }
@@ -232,23 +254,31 @@ namespace DateTimeIndicator {
             current_model = new Models.CalendarModel (date);
 
             var center_grid = create_grid (current_model);
-            center_grid.set_range (current_model.data_range, current_model.month_start);
-            center_grid.update_weeks (current_model.data_range.first_dt, current_model.num_weeks);
 
             var prev_month = current_model.get_relative_position (-1);
             var left_grid = create_grid (new Models.CalendarModel (prev_month));
-            left_grid.set_range (left_grid.model.data_range, left_grid.model.month_start);
-            left_grid.update_weeks (left_grid.model.data_range.first_dt, left_grid.model.num_weeks);
 
             var next_month = current_model.get_relative_position (1);
             var right_grid = create_grid (new Models.CalendarModel (next_month));
-            right_grid.set_range (right_grid.model.data_range, right_grid.model.month_start);
-            right_grid.update_weeks (right_grid.model.data_range.first_dt, right_grid.model.num_weeks);
 
             carousel.add (left_grid);
             carousel.add (center_grid);
             carousel.add (right_grid);
             carousel.scroll_to (center_grid);
+        }
+
+        private void set_today_style () {
+            if (current_today != null) {
+                current_today.get_style_context ().add_class (Granite.STYLE_CLASS_ACCENT);
+                current_today.set_receives_default (true);
+            }
+        }
+
+        private void unset_today_style () {
+            if (current_today != null) {
+                current_today.get_style_context ().remove_class (Granite.STYLE_CLASS_ACCENT);
+                current_today.set_receives_default (false);
+            }
         }
 
         public void show_date_in_maya (GLib.DateTime date) {

@@ -188,19 +188,10 @@ namespace DateTimeIndicator {
             day.focus_in_event.connect (on_day_focus_in);
         }
 
-        public void set_focus_to_today () {
-            if (grid_range == null) {
-                return;
-            }
-
-            Gee.List<GLib.DateTime> dates = grid_range.to_list ();
-            for (int i = 0; i < dates.size; i++) {
-                var date = dates[i];
-                Widgets.CalendarDay? day = data[day_hash (date)];
-                if (day != null && day.name == "today") {
-                    day.grab_focus_force ();
-                    return;
-                }
+        public void set_focus_to_today (GLib.DateTime d) {
+            var required_date = day_hash (d);
+            if (data.has_key (required_date)) {
+                data[required_date].grab_focus_force ();
             }
         }
 
@@ -208,7 +199,7 @@ namespace DateTimeIndicator {
          * Sets the given range to be displayed in the grid. Note that the number of days
          * must remain the same.
          */
-        public void set_range (Util.DateRange new_range, GLib.DateTime month_start) {
+        public Widgets.CalendarDay? set_range (Util.DateRange new_range, GLib.DateTime month_start) {
             var today = new GLib.DateTime.now_local ();
 
             Gee.List<GLib.DateTime> old_dates = grid_range == null ?
@@ -222,7 +213,6 @@ namespace DateTimeIndicator {
             assert (new_dates.size % 7 == 0);
 
             /* Create new widgets for the new range */
-
             var date = Util.strip_time (today);
             date = date.add_days (model.week_starts_on - date.get_day_of_week ());
             foreach (var label in header_labels) {
@@ -232,6 +222,8 @@ namespace DateTimeIndicator {
 
             int i = 0;
             int col = 0, row = 2;
+
+            Widgets.CalendarDay? current_today = null;
 
             for (i = 0; i < new_dates.size; i++) {
                 var new_date = new_dates[i];
@@ -260,7 +252,10 @@ namespace DateTimeIndicator {
                 }
 
                 update_day (day, new_date, month_start);
-                update_today_style (day, new_date, today);
+
+                if (new_date.get_day_of_year () == today.get_day_of_year () && new_date.get_year () == today.get_year ()) {
+                    current_today = day;
+                }
 
                 col = (col + 1) % 7;
                 row = (col == 0) ? row + 1 : row;
@@ -281,6 +276,7 @@ namespace DateTimeIndicator {
             data.set_all (data_new);
 
             grid_range = new_range;
+            return current_today;
         }
 
         /**
@@ -327,32 +323,13 @@ namespace DateTimeIndicator {
             }
         }
 
-        public void update_today () {
-            if (grid_range == null) return;
-            Gee.List<GLib.DateTime> dates = grid_range.to_list ();
-            var today = new GLib.DateTime.now_local ();
-
-            int i = 0;
-            for (i = 0; i < dates.size; i++) {
-                var date = dates[i];
-                Widgets.CalendarDay? day = data[day_hash (date)];
-                if (day == null) return;
-                update_today_style (day, date, today);
+        public Widgets.CalendarDay? get_day (GLib.DateTime d) {
+            var required_date = day_hash (d);
+            if (data.has_key (required_date)) {
+                return data[required_date];
             }
-        }
 
-        private void update_today_style (Widgets.CalendarDay day, GLib.DateTime date, GLib.DateTime today) {
-            if (date.get_day_of_year () == today.get_day_of_year () && date.get_year () == today.get_year ()) {
-                day.name = "today";
-                day.get_style_context ().add_class (Granite.STYLE_CLASS_ACCENT);
-                day.set_receives_default (true);
-                day.show_all ();
-            } else if (day.name == "today") {
-                day.name = "";
-                day.get_style_context ().remove_class (Granite.STYLE_CLASS_ACCENT);
-                day.set_receives_default (false);
-                day.show_all ();
-            }
+            return null;
         }
 
         private uint day_hash (GLib.DateTime date) {
