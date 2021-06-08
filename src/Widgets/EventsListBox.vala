@@ -19,9 +19,11 @@
 namespace DateTimeIndicator {
     public class Widgets.EventsListBox : Gtk.ListBox {
         private Gtk.Label placeholder_label;
+
         private const string TODAY = _("Today");
         private const string TOMORROW = _("Tomorrow");
         private const string YESTERDAY = _("Yesterday");
+
         public EventsListBox () {
             selection_mode = Gtk.SelectionMode.NONE;
 
@@ -125,20 +127,20 @@ namespace DateTimeIndicator {
         }
 
         private void header_update_func (Gtk.ListBoxRow lbrow, Gtk.ListBoxRow? lbbefore) {
-            var row = (Widgets.EventRow) lbrow;
+            var row = lbrow as Widgets.EventRow;
+            if (row == null) {
+                return;
+            }
+
             if (lbbefore != null) {
                 var before = (Widgets.EventRow) lbbefore;
                 if (row.is_allday == before.is_allday) {
                     row.set_header (null);
-                    return;
-                }
-
-                if (row.is_allday != before.is_allday) {
+                } else {
                     var header_label = new Granite.HeaderLabel (_("During the Day"));
                     header_label.margin_start = header_label.margin_end = 6;
 
                     row.set_header (header_label);
-                    return;
                 }
             } else {
                 if (row.is_allday) {
@@ -147,7 +149,6 @@ namespace DateTimeIndicator {
 
                     row.set_header (allday_header);
                 }
-                return;
             }
         }
 

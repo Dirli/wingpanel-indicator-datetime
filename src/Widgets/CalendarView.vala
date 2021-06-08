@@ -22,7 +22,7 @@ namespace DateTimeIndicator {
         public signal void event_updates ();
         public signal void selection_changed (GLib.DateTime new_date);
 
-        public GLib.DateTime? selected_date { get; private set; default = null;}
+        public GLib.DateTime? selected_date { get; private set; default = null; }
         public GLib.Settings settings { get; construct; }
 
         private Widgets.CalendarDay? _current_today = null;
@@ -37,7 +37,7 @@ namespace DateTimeIndicator {
             }
         }
 
-        public Models.CalendarModel current_model {get; private set;}
+        public Models.CalendarModel current_model { get; private set; }
         private Hdy.Carousel carousel;
 
         public CalendarView (GLib.Settings clock_settings) {
@@ -104,18 +104,18 @@ namespace DateTimeIndicator {
         }
 
         private bool on_key_press (Gdk.EventKey event) {
-            if (event.keyval == Gdk.keyval_from_name ("Home") ) {
+            if (event.keyval == Gdk.keyval_from_name ("Home")) {
                 show_today ();
                 return true;
             }
 
-            if (event.keyval == Gdk.keyval_from_name ("KP_Add") ) {
+            if (event.keyval == Gdk.keyval_from_name ("KP_Add")) {
                 selected_date = selected_date.add_years (1);
                 reset_carousel (selected_date);
                 return true;
             }
 
-            if (event.keyval == Gdk.keyval_from_name ("KP_Subtract") ) {
+            if (event.keyval == Gdk.keyval_from_name ("KP_Subtract")) {
                 selected_date = selected_date.add_years (-1);
                 reset_carousel (selected_date);
                 return true;

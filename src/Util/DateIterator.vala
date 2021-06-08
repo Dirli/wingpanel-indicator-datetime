@@ -20,7 +20,7 @@
  */
 
 namespace DateTimeIndicator {
-    public class Util.DateIterator : Object, Gee.Traversable<GLib.DateTime>, Gee.Iterator<GLib.DateTime> {
+    public class Util.DateIterator : GLib.Object, Gee.Traversable<GLib.DateTime>, Gee.Iterator<GLib.DateTime> {
         public GLib.DateTime current { get; construct set; }
         public Util.DateRange range { get; construct; }
 
@@ -39,10 +39,8 @@ namespace DateTimeIndicator {
         }
 
         public DateIterator (Util.DateRange range) {
-            Object (
-                range: range,
-                current: range.first_dt.add_days (-1)
-            );
+            Object (range: range,
+                    current: range.first_dt.add_days (-1));
         }
 
         public bool @foreach (Gee.ForallFunc<GLib.DateTime> f) {

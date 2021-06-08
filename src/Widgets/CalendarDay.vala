@@ -112,7 +112,7 @@ namespace DateTimeIndicator {
 
             if (dot_widgets.size < 3 && !dot_widgets.has_key (color)) {
                 var event_dot = new Gtk.Image ();
-                event_dot.gicon = new ThemedIcon ("pager-checked-symbolic");
+                event_dot.gicon = new GLib.ThemedIcon ("pager-checked-symbolic");
                 event_dot.pixel_size = 6;
 
                 dot_widgets[color] = event_dot;

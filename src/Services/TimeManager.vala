@@ -54,9 +54,15 @@ namespace DateTimeIndicator {
             add_timeout ();
             try {
                 // Listen for the D-BUS server that controls time settings
-                Bus.watch_name (BusType.SYSTEM, "org.freedesktop.timedate1", BusNameWatcherFlags.NONE, on_watch, on_unwatch);
+                GLib.Bus.watch_name (GLib.BusType.SYSTEM,
+                                     "org.freedesktop.timedate1",
+                                     GLib.BusNameWatcherFlags.NONE,
+                                     on_watch,
+                                     on_unwatch);
                 // Listen for the signal that is fired when waking up from sleep, then update time
-                manager = Bus.get_proxy_sync (BusType.SYSTEM, "org.freedesktop.login1", "/org/freedesktop/login1");
+                manager = GLib.Bus.get_proxy_sync (GLib.BusType.SYSTEM,
+                                                   "org.freedesktop.login1",
+                                                   "/org/freedesktop/login1");
                 manager.prepare_for_sleep.connect ((sleeping) => {
                     if (!sleeping) {
                         update_current_time ();
@@ -102,12 +108,12 @@ namespace DateTimeIndicator {
             }
         }
 
-        private void on_watch (DBusConnection conn) {
+        private void on_watch (GLib.DBusConnection conn) {
             // Start updating the time display quicker because someone is changing settings
             add_timeout (true);
         }
 
-        private void on_unwatch (DBusConnection conn) {
+        private void on_unwatch (GLib.DBusConnection conn) {
             // Stop updating the time display quicker
             add_timeout (false);
         }
@@ -121,10 +127,10 @@ namespace DateTimeIndicator {
             }
 
             if (timeout_id > 0) {
-                Source.remove (timeout_id);
+                GLib.Source.remove (timeout_id);
             }
 
-            timeout_id = Timeout.add (interval, () => {
+            timeout_id = GLib.Timeout.add (interval, () => {
                 update_current_time ();
                 minute_changed ();
                 add_timeout (update_fast);
@@ -164,7 +170,7 @@ namespace DateTimeIndicator {
 
             var seconds_until_next_minute = 60 - (current_time.to_unix () % 60);
 
-            return (uint)seconds_until_next_minute * 1000;
+            return (uint) seconds_until_next_minute * 1000;
         }
 
         public static TimeManager get_default () {

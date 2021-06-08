@@ -16,7 +16,7 @@
  */
 
 namespace DateTimeIndicator {
-    public class Models.CalendarModel : Object {
+    public class Models.CalendarModel : GLib.Object {
         /* The data_range is the range of dates for which this model is storing
          * data.
          *
@@ -60,7 +60,7 @@ namespace DateTimeIndicator {
             var data_range_first = month_start.add_days (-offset);
 
             dow = month_end.get_day_of_week ();
-            wso = (int)(week_starts_on + 6);
+            wso = (int) (week_starts_on + 6);
 
             /* WSO must be between 1 and 7 */
             if (wso > 7) {

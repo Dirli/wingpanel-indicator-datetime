@@ -118,7 +118,7 @@ namespace DateTimeIndicator {
 
                 settings_button.clicked.connect (() => {
                     try {
-                        AppInfo.launch_default_for_uri ("settings://time", null);
+                        GLib.AppInfo.launch_default_for_uri ("settings://time", null);
                     } catch (Error e) {
                         warning ("Failed to open time and date settings: %s", e.message);
                     }

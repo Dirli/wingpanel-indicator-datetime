@@ -21,7 +21,7 @@ namespace DateTimeIndicator {
         public signal void events_updated (E.Source source, Gee.Collection<ECal.Component> events);
         public signal void events_removed (E.Source source, Gee.Collection<ECal.Component> events);
 
-        public Models.CalendarModel model {get; set;}
+        public Models.CalendarModel model { get; set; }
 
         public HashTable<E.Source, Gee.TreeMultiMap<string, ECal.Component>> source_events { get; private set; }
 
@@ -164,7 +164,7 @@ namespace DateTimeIndicator {
 #else
         private void on_objects_added (E.Source source, ECal.Client client, SList<weak ICal.Component> objects) {
 #endif
-            debug (@"Received $(objects.length()) added event(s) for source '%s'", source.dup_display_name ());
+            debug (@"Received $(objects.length ()) added event(s) for source '%s'", source.dup_display_name ());
             var events = source_events.get (source);
             var added_events = new Gee.ArrayList<ECal.Component> ((Gee.EqualDataFunc<ECal.Component>?) Util.calcomponent_equal_func);
             objects.foreach ((comp) => {
@@ -190,7 +190,7 @@ namespace DateTimeIndicator {
 #else
         private void on_objects_modified (E.Source source, ECal.Client client, SList<weak ICal.Component> objects) {
 #endif
-            debug (@"Received $(objects.length()) modified event(s) for source '%s'", source.dup_display_name ());
+            debug (@"Received $(objects.length ()) modified event(s) for source '%s'", source.dup_display_name ());
             var updated_events = new Gee.ArrayList<ECal.Component> ((Gee.EqualDataFunc<ECal.Component>?) Util.calcomponent_equal_func);
 
             objects.foreach ((comp) => {

@@ -39,9 +39,7 @@ namespace DateTimeIndicator {
         private Widgets.CalendarDay selected_gridday;
         private Gtk.Label[] header_labels;
         private Gtk.Revealer[] week_labels;
-        public Models.CalendarModel model {
-            get; construct set;
-        }
+        public Models.CalendarModel model { get; construct set; }
 
         public GLib.Settings settings { get; construct; }
 
@@ -340,6 +338,10 @@ namespace DateTimeIndicator {
         public void add_event_dots (E.Source source, Gee.Collection<ECal.Component> events) {
             foreach (var component in events) {
                 unowned ICal.Component? icomp = component.get_icalcomponent ();
+                if (icomp == null) {
+                    continue;
+                }
+
                 ICal.Time start_time = icomp.get_dtstart ();
                 time_t start_unix = start_time.as_timet ();
                 var t = new DateTime.from_unix_utc (start_unix);
@@ -353,8 +355,10 @@ namespace DateTimeIndicator {
 
         public void remove_event_dots (E.Source source, Gee.Collection<ECal.Component> events) {
             foreach (var component in events) {
-                unowned ICal.Component ical = component.get_icalcomponent ();
-                var event_uid = ical.get_uid ();
+                unowned ICal.Component? ical = component.get_icalcomponent ();
+                if (ical == null) {
+                    continue;
+                }
 
                 ICal.Time start_time = ical.get_dtstart ();
                 time_t start_unix = start_time.as_timet ();
@@ -362,7 +366,7 @@ namespace DateTimeIndicator {
                 var d_hash = day_hash (t);
                 if (data.has_key (d_hash)) {
                     var source_calendar = (E.SourceCalendar?) source.get_extension (E.SOURCE_EXTENSION_CALENDAR);
-                    data[d_hash].remove_dots (source_calendar.dup_color (), event_uid);
+                    data[d_hash].remove_dots (source_calendar.dup_color (), ical.get_uid ());
                 }
             }
         }

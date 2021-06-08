@@ -36,11 +36,9 @@ namespace DateTimeIndicator {
         private Gtk.Label time_label;
 
         public EventRow (GLib.DateTime date, ICal.Component component, E.Source source) {
-            Object (
-                component: component,
-                date: date,
-                cal: (E.SourceCalendar?) source.get_extension (E.SOURCE_EXTENSION_CALENDAR)
-            );
+            Object (component: component,
+                    date: date,
+                    cal: (E.SourceCalendar?) source.get_extension (E.SOURCE_EXTENSION_CALENDAR));
         }
 
         static construct {
@@ -65,10 +63,9 @@ namespace DateTimeIndicator {
                 is_allday = true;
             }
 
-            unowned string icon_name = "office-calendar-symbolic";
-            if (end_time == null) {
-                icon_name = "alarm-symbolic";
-            }
+            unowned string icon_name = end_time != null ?
+                                       "office-calendar-symbolic" :
+                                       "alarm-symbolic";
 
             event_image = new Gtk.Image.from_icon_name (icon_name, Gtk.IconSize.MENU);
             event_image.valign = Gtk.Align.START;

@@ -21,7 +21,7 @@
 
 namespace DateTimeIndicator {
 /* Represents date range from 'first' to 'last' inclusive */
-    public class Util.DateRange : Object, Gee.Traversable<GLib.DateTime>, Gee.Iterable<GLib.DateTime> {
+    public class Util.DateRange : GLib.Object, Gee.Traversable<GLib.DateTime>, Gee.Iterable<GLib.DateTime> {
         public GLib.DateTime first_dt { get; construct; }
         public GLib.DateTime last_dt { get; construct; }
 
@@ -36,10 +36,8 @@ namespace DateTimeIndicator {
         }
 
         public DateRange (GLib.DateTime first, GLib.DateTime last) {
-            Object (
-                first_dt: first,
-                last_dt: last
-            );
+            Object (first_dt: first,
+                    last_dt: last);
         }
 
         public bool equals (DateRange other) {
@@ -47,11 +45,11 @@ namespace DateTimeIndicator {
         }
 
         public Gee.Iterator<GLib.DateTime> iterator () {
-            return new DateIterator (this);
+            return new Util.DateIterator (this);
         }
 
         public Gee.List<GLib.DateTime> to_list () {
-            var list = new Gee.ArrayList<GLib.DateTime> ((Gee.EqualDataFunc<GLib.DateTime>? )datetime_equal_func);
+            var list = new Gee.ArrayList<GLib.DateTime> ((Gee.EqualDataFunc<GLib.DateTime>?) datetime_equal_func);
 
             foreach (var date in this) {
                 list.add (date);
