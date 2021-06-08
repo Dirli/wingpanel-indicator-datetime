@@ -37,7 +37,20 @@ namespace DateTimeIndicator {
             }
         }
 
-        public Models.CalendarModel current_model { get; private set; }
+        private Gtk.Label month_label;
+
+        private Models.CalendarModel _current_model;
+        public Models.CalendarModel current_model {
+            get {
+                return _current_model;
+            }
+            private set {
+                _current_model = value;
+
+                month_label.label = value.month_start.format (_("%OB, %Y"));
+            }
+        }
+
         private Hdy.Carousel carousel;
 
         public CalendarView (GLib.Settings clock_settings) {
@@ -53,6 +66,17 @@ namespace DateTimeIndicator {
 
             var provider = new Gtk.CssProvider ();
             provider.load_from_resource ("/io/elementary/desktop/wingpanel/datetime/ControlHeader.css");
+
+            month_label = new Gtk.Label (null);
+            month_label.hexpand = true;
+            month_label.margin_start = 6;
+            month_label.xalign = 0;
+            month_label.width_chars = 16;
+
+            var month_style_context = month_label.get_style_context ();
+            month_style_context.add_class (Granite.STYLE_CLASS_ACCENT);
+            month_style_context.add_class ("header-label");
+            month_style_context.add_provider (provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
 
             var left_button = new Gtk.Button.from_icon_name ("pan-start-symbolic");
             var center_button = new Gtk.Button.from_icon_name ("office-calendar-symbolic");
@@ -81,8 +105,9 @@ namespace DateTimeIndicator {
 
             carousel.show_all ();
 
-            attach (box_buttons_revealer, 0, 0);
-            attach (carousel, 0, 1);
+            attach (month_label,          0, 0);
+            attach (box_buttons_revealer, 1, 0);
+            attach (carousel,             0, 1, 2);
 
             settings.bind ("show-nav", box_buttons_revealer, "reveal-child", GLib.SettingsBindFlags.DEFAULT);
 
