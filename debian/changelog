@@ -1,0 +1,11 @@
+wingpanel-indicator-datetime (3.0.0-1) bullseye; urgency=medium
+
+  * Slightly more accurately tracks the current day
+  * Returned seconds (for the correct operation of the settings)
+  * EventRow: rely on stylesheet for colors (updtream PR236)
+  * PanelLabel: Use tabular numbers font feature to display the time (upstream PR246)
+  * Fixed unfocused when opening the calendar
+  * Replaced the Wingpanel.Separator with Gtk.Separator
+  * Update name of libwingpanel dependency
+
+ -- dirli <litandrej85@gmail.com>  Sat, 24 Jul 2021 00:57:38 +0300

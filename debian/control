@@ -1,0 +1,27 @@
+Source: wingpanel-indicator-datetime
+Section: x11
+Priority: optional
+Maintainer: dirli <litandrej85@gmail.com>
+Build-Depends: debhelper-compat (= 13),
+               gettext,
+               gobject-introspection,
+               libecal2.0-dev | libecal1.2-dev,
+               libedataserver1.2-dev,
+               libical-dev,
+               libgranite-dev,
+               libgtk-3-dev (>= 3.12),
+               libhandy-1-dev,
+               libwingpanel-dev,
+               meson,
+               valac (>= 0.40.3)
+Standards-Version: 4.5.1
+https://github.com/Dirli/wingpanel-indicator-datetime
+Rules-Requires-Root: no
+
+Package: wingpanel-indicator-datetime
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Recommends: pantheon-default-settings (>= 5.2)
+Enhances: wingpanel
+Description: WingPanel Date & Time Indicator
+ WingPanel Date & Time Indicator
