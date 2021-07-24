@@ -1,28 +1,24 @@
 # Wingpanel Date &amp; Time Indicator
 
-The package differs from the original one by the ability to refuse the Evolution Data Server.
+This package is a fork of the upstream package, and if possible completely repeats its functionality. But the implementation has been rewritten almost completely. Most of the bugs have been fixed. It does not make sense to use the package together with the upstream, respectively, the name is left the same as the file structure. By installing it you are overwriting the upstream
 
 ![Screenshot](data/screenshot.png?raw=true)
 
 ## Building and Installation
 
-You'll need the following dependencies:
-
+### You'll need the following dependencies:
 * gobject-introspection
 * libecal1.2-dev
 * libedataserver1.2-dev
 * libical-dev
 * libgranite-dev
+* libgtk-3-dev
+* libhandy-1-dev
 * libwingpanel-2.0-dev
 * meson
 * valac >= 0.40.3
 
-Run `meson` to configure the build environment and then `ninja` to build
-
+### How To Build
     meson build --prefix=/usr
-    cd build
-    ninja
-
-To install, use `ninja install`
-
-    sudo ninja install
+    ninja -C build
+    sudo ninja install -C build
