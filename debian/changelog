@@ -1,3 +1,9 @@
+wingpanel-indicator-datetime (3.0.1-1) bullseye; urgency=medium
+
+  * Fixed deb packaging
+
+ -- dirli <litandrej85@gmail.com>  Sat, 24 Jul 2021 12:26:22 +0300
+
 wingpanel-indicator-datetime (3.0.0-1) bullseye; urgency=medium
 
   * Slightly more accurately tracks the current day

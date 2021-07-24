@@ -15,7 +15,7 @@ Build-Depends: debhelper-compat (= 13),
                meson,
                valac (>= 0.40.3)
 Standards-Version: 4.5.1
-https://github.com/Dirli/wingpanel-indicator-datetime
+Homepage: https://github.com/Dirli/wingpanel-indicator-datetime
 Rules-Requires-Root: no
 
 Package: wingpanel-indicator-datetime
