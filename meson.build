@@ -42,7 +42,7 @@ if libecal_dep.found ()
   add_project_arguments ('--define=E_CAL_2_0', language: 'vala')
   add_project_arguments ('-DLIBICAL_GLIB_UNSTABLE_API=1', language: 'c')
 else
-  libecal_dep = dependency ('libecal-1.2', version: '>=3.8.0')
+  libecal_dep = dependency ('libecal-1.2', version: '>=3.8.0', required: false)
   if libecal_dep.found ()
     deps += dependency ('libical')
     add_project_arguments ('--vapidir', join_paths (meson.current_source_dir (), 'vapi'), language: 'vala')
