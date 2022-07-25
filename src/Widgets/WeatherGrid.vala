@@ -10,6 +10,8 @@ namespace DateTimeIndicator {
         private Gtk.Label desc_value;
         private Gtk.Image w_icon;
 
+        private Gtk.Label update_label;
+
         private Gtk.Box forecast_box;
 
         public WeatherGrid () {
@@ -25,8 +27,10 @@ namespace DateTimeIndicator {
             city_value = new Gtk.Label (null);
             city_value.halign = Gtk.Align.START;
             city_value.get_style_context ().add_class (Granite.STYLE_CLASS_H2_LABEL);
+            city_value.set_ellipsize (Pango.EllipsizeMode.END);
 
             desc_value = new Gtk.Label (null);
+            desc_value.set_ellipsize (Pango.EllipsizeMode.END);
             desc_value.halign = Gtk.Align.START;
 
             temp_value = new Gtk.Label (null);
@@ -72,13 +76,16 @@ namespace DateTimeIndicator {
                 halign = Gtk.Align.CENTER,
                 margin_start = 6,
                 margin_end = 6,
-                margin_top = 10,
-                margin_bottom = 10
+                margin_top = 6,
+                margin_bottom = 12
             };
 
             var scrolled_window = new Gtk.ScrolledWindow (null, null);
             scrolled_window.set_policy (Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.NEVER);
             scrolled_window.add (forecast_box);
+
+            update_label = new Gtk.Label (null);
+            update_label.halign = Gtk.Align.END;
 
             attach (city_value,      0, 0, 3);
             attach (desc_value,      0, 1, 3);
@@ -87,6 +94,7 @@ namespace DateTimeIndicator {
             attach (sunstate_box,    2, 2);
             attach (wrap_box,        0, 3, 3);
             attach (scrolled_window, 0, 4, 3);
+            attach (update_label,    0, 5, 3);
         }
 
         public void update_city (string s) {
@@ -106,6 +114,8 @@ namespace DateTimeIndicator {
             pressure_value.set_label (w.pressure);
             wind_value.set_label (w.wind);
             desc_value.set_label (w.description);
+
+            update_label.label = _("Last update") + ": " + Util.w_time_format (w.date);
         }
 
         public void add_forecast_item (WeatherStruct w) {
@@ -116,6 +126,9 @@ namespace DateTimeIndicator {
             hour_box.add (new Gtk.Label (Util.w_time_format (w.date)));
 
             forecast_box.add (hour_box);
+        }
+
+        public void show_forecast () {
             forecast_box.show_all ();
         }
 
@@ -123,6 +136,8 @@ namespace DateTimeIndicator {
             foreach (unowned Gtk.Widget w_box in forecast_box.get_children ()) {
                 forecast_box.remove (w_box);
             }
+
+            forecast_box.hide ();
         }
     }
 }

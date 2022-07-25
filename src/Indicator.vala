@@ -171,10 +171,16 @@ namespace DateTimeIndicator {
                 weather_grid.clear_forecast ();
                 var sel_date = calendar.selected_date;
                 if (sel_date != null) {
+                    bool show_forecast = false;
                     weather_manager.forecast_on_date (sel_date).@foreach ((w_iter) => {
+                        show_forecast = true;
                         weather_grid.add_forecast_item (w_iter);
                         return true;
                     });
+
+                    if (show_forecast) {
+                        weather_grid.show_forecast ();
+                    }
                 }
             }
         }
