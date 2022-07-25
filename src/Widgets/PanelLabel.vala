@@ -27,7 +27,20 @@ namespace DateTimeIndicator {
         public bool clock_show_weekday { get; set; }
         public bool clock_show_seconds { get; set; }
 
+        private Gtk.Label temp_label;
+        private Gtk.Image weather_icon;
+
         public PanelLabel (GLib.Settings settings) {
+            Object (valign: Gtk.Align.CENTER);
+
+            weather_icon = new Gtk.Image ();
+            temp_label = new Gtk.Label (null);
+
+            var weather_box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 0);
+            weather_box.margin_end = 12;
+            weather_box.add (weather_icon);
+            weather_box.add (temp_label);
+
             date_label = new Gtk.Label (null);
             date_label.margin_end = 12;
 
@@ -39,7 +52,7 @@ namespace DateTimeIndicator {
                 use_markup = true
             };
 
-            valign = Gtk.Align.CENTER;
+            add (weather_box);
             add (date_revealer);
             add (time_label);
 
@@ -69,6 +82,11 @@ namespace DateTimeIndicator {
 
             string time_format = Granite.DateTime.get_default_time_format (time_manager.is_12h, clock_show_seconds);
             time_label.label = GLib.Markup.printf_escaped ("<span font_features='tnum'>%s</span>", time_manager.format (time_format));
+        }
+
+        public void update_weather (string temp_str, string icon_name) {
+            temp_label.label = temp_str;
+            weather_icon.set_from_icon_name (icon_name, Gtk.IconSize.SMALL_TOOLBAR);
         }
     }
 }

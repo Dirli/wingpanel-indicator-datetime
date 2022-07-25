@@ -18,11 +18,25 @@
  */
 
 namespace DateTimeIndicator {
+    public struct WeatherStruct {
+        public int64 date;
+        public string description;
+        public string icon_name;
+        public string temp;
+        public string pressure;
+        public string wind;
+        public string clouds;
+        public string humidity;
+    }
+
     public class Indicator : Wingpanel.Indicator {
         public GLib.Settings settings;
 
         private Widgets.PanelLabel panel_label;
         private Widgets.CalendarView calendar;
+
+        private Services.WeatherManager? weather_manager = null;
+        private Widgets.WeatherGrid weather_grid = null;
 
 #if USE_EVO
         private Widgets.EventsListBox event_listbox;
@@ -47,6 +61,10 @@ namespace DateTimeIndicator {
         public override Gtk.Widget get_display_widget () {
             if (panel_label == null) {
                 panel_label = new Widgets.PanelLabel (settings);
+
+                weather_manager = new Services.WeatherManager ();
+                weather_manager.updated_today.connect (on_updated_today);
+                weather_manager.init ();
             }
 
             return panel_label;
@@ -63,11 +81,17 @@ namespace DateTimeIndicator {
                 var settings_button = new Gtk.ModelButton ();
                 settings_button.text = _("Date & Time Settings…");
 
-                main_grid = new Gtk.Grid ();
-                main_grid.margin_top = 12;
+                main_grid = new Gtk.Grid () {
+                    margin_top = 12,
+                    margin_bottom = 12
+                };
                 main_grid.attach (calendar, 0, 0);
                 main_grid.attach (new Gtk.Separator (Gtk.Orientation.HORIZONTAL), 0, 1);
                 main_grid.attach (settings_button, 0, 2);
+
+                weather_manager.updated_forecast.connect (on_updated_forecast);
+                weather_manager.changed_location.connect (on_changed_location);
+                weather_manager.update_location ();
 
 #if USE_EVO
                 event_manager = new Services.EventsManager ();
@@ -100,12 +124,7 @@ namespace DateTimeIndicator {
                 size_group.add_widget (calendar);
                 size_group.add_widget (event_listbox);
 
-                event_manager.open.begin ((obj, res) => {
-                    calendar.selection_changed.connect ((date) => {
-                        event_listbox.update_placeholder (date);
-                        idle_update_events ();
-                    });
-                });
+                event_manager.open.begin ();
 
                 calendar.notify["current-model"].connect (() => {
                     event_manager.model = calendar.current_model;
@@ -116,6 +135,16 @@ namespace DateTimeIndicator {
                 });
 #endif
 
+                calendar.selection_changed.connect ((date) => {
+                    if (weather_grid != null && weather_manager.need_update (date)) {
+                        on_updated_forecast ();
+                    }
+
+#if USE_EVO
+                    event_listbox.update_placeholder (date);
+                    idle_update_events ();
+#endif
+                });
                 settings_button.clicked.connect (() => {
                     try {
                         GLib.AppInfo.launch_default_for_uri ("settings://time", null);
@@ -126,6 +155,41 @@ namespace DateTimeIndicator {
             }
 
             return main_grid;
+        }
+
+        private void on_updated_today (WeatherStruct w, int64 sunrise, int64 sunset) {
+            panel_label.update_weather (w.temp, w.icon_name);
+
+            if (weather_grid != null) {
+                weather_grid.update_today (w);
+                weather_grid.update_sun_state (sunrise, sunset);
+            }
+        }
+
+        private void on_updated_forecast () {
+            if (weather_grid != null) {
+                weather_grid.clear_forecast ();
+                var sel_date = calendar.selected_date;
+                if (sel_date != null) {
+                    weather_manager.forecast_on_date (sel_date).@foreach ((w_iter) => {
+                        weather_grid.add_forecast_item (w_iter);
+                        return true;
+                    });
+                }
+            }
+        }
+
+        private void on_changed_location (string loc) {
+            if (weather_grid == null) {
+                weather_grid = new Widgets.WeatherGrid ();
+
+                main_grid.attach (new Gtk.Separator (Gtk.Orientation.HORIZONTAL), 0, 3);
+                main_grid.attach (weather_grid, 0, 4);
+
+                weather_manager.fetch_data ();
+            }
+
+            weather_grid.update_city (loc);
         }
 
 #if USE_EVO

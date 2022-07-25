@@ -20,6 +20,19 @@
  */
 
 namespace DateTimeIndicator.Util {
+    public static string w_time_format (int64 unix_time) {
+        if (unix_time == 0) {
+            return "-";
+        }
+
+        var datetime = new GLib.DateTime.from_unix_local (unix_time);
+        var sys_setting = new GLib.Settings ("org.gnome.desktop.interface");
+
+        return sys_setting.get_string ("clock-format") == "12h"
+               ? datetime.format ("%I:%M")
+               : datetime.format ("%R");
+    }
+
     public GLib.DateTime get_start_of_month (owned GLib.DateTime? date = null) {
         if (date == null) {
             date = new GLib.DateTime.now_local ();
@@ -210,4 +223,58 @@ namespace DateTimeIndicator.Util {
         return false;
     }
 #endif
+
+    public string wind_format (GWeather.SpeedUnit s_unit, double? speed, int wind_d) {
+        if (speed == null) {
+            return "no data";
+        }
+
+        string w_label = s_unit == GWeather.SpeedUnit.MS ? _("m/s") :
+                         s_unit == GWeather.SpeedUnit.MPH ? _("mph") :
+                         s_unit == GWeather.SpeedUnit.KPH ? _("kph") :
+                         s_unit == GWeather.SpeedUnit.KNOTS ? _("knots") :
+                         "unknown";
+
+        string windformat = "%.1f %s".printf (speed, w_label);
+
+        string[] arr = {"N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"};
+        if (wind_d > -1 && wind_d < arr.length) {
+            switch (arr[wind_d]) {
+                case "N":
+                case "NNE":
+                case "NNW":
+                    windformat += ", ↓";
+                    break;
+                case "NE":
+                    windformat += ", ↙";
+                    break;
+                case "ENE":
+                case "E":
+                case "ESE":
+                    windformat += ", ←";
+                    break;
+                case "SE":
+                    windformat += ", ↖";
+                    break;
+                case "SSE":
+                case "S":
+                case "SSW":
+                    windformat += ", ↑";
+                    break;
+                case "SW":
+                    windformat += ", ↗";
+                    break;
+                case "WSW":
+                case "W":
+                case "WNW":
+                        windformat += ", →";
+                    break;
+                case "NW":
+                    windformat += ", ↘";
+                    break;
+            }
+        }
+
+        return windformat;
+    }
 }
