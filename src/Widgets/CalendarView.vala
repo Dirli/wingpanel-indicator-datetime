@@ -103,11 +103,12 @@ namespace DateTimeIndicator {
 
             init_carousel (null);
 
-            carousel.show_all ();
 
             attach (month_label,          0, 0);
             attach (box_buttons_revealer, 1, 0);
             attach (carousel,             0, 1, 2);
+
+            show_all ();
 
             settings.bind ("show-nav", box_buttons_revealer, "reveal-child", GLib.SettingsBindFlags.DEFAULT);
 
@@ -230,35 +231,36 @@ namespace DateTimeIndicator {
             return calendar_grid;
         }
 
-        public void show_today () {
+        public void show_today (bool refresh = false) {
             var start = Util.get_start_of_month ();
-            var today = Util.strip_time (new GLib.DateTime.now_local ());
-            selected_date = today;
+            selected_date = Util.strip_time (new GLib.DateTime.now_local ());
 
-            if (start.equal (current_model.month_start)) {
-                Widgets.CalendarGrid selected_grid = carousel.get_children ().nth_data (1) as Widgets.CalendarGrid;
-                if (selected_grid != null) {
-                    selected_grid.set_focus_to_today (today);
+            if (!refresh) {
+                if (start.equal (current_model.month_start)) {
+                    Widgets.CalendarGrid selected_grid = carousel.get_children ().nth_data (1) as Widgets.CalendarGrid;
+                    if (selected_grid != null) {
+                        selected_grid.set_focus_to_today (selected_date);
 
-                    if (current_today != null && !today.equal (Util.strip_time (Util.strip_time (current_today.date)))) {
-                        var _today = selected_grid.get_day (today);
-                        if (_today != null) {
-                            current_today = _today;
+                        if (current_today != null && !selected_date.equal (Util.strip_time (current_today.date))) {
+                            var _today = selected_grid.get_day (selected_date);
+                            if (_today != null) {
+                                current_today = _today;
+                            }
                         }
                     }
+
+                    return;
                 }
 
-                return;
-            }
+                if (start.equal (current_model.get_relative_position (-1))) {
+                    carousel.switch_child ((int) carousel.get_position () - 1, carousel.get_animation_duration ());
+                    return;
+                }
 
-            if (start.equal (current_model.get_relative_position (-1))) {
-                carousel.switch_child ((int) carousel.get_position () - 1, carousel.get_animation_duration ());
-                return;
-            }
-
-            if (start.equal (current_model.get_relative_position (1))) {
-                carousel.switch_child ((int) carousel.get_position () + 1, carousel.get_animation_duration ());
-                return;
+                if (start.equal (current_model.get_relative_position (1))) {
+                    carousel.switch_child ((int) carousel.get_position () + 1, carousel.get_animation_duration ());
+                    return;
+                }
             }
 
             /*reset Carousel*/

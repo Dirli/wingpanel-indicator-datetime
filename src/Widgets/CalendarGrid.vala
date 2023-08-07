@@ -41,15 +41,21 @@ namespace DateTimeIndicator {
         private Gtk.Revealer[] week_labels;
         public Models.CalendarModel model { get; construct set; }
 
+        private Gtk.CssProvider provider;
+
         public GLib.Settings settings { get; construct; }
 
         public CalendarGrid (GLib.Settings clock_settings, Models.CalendarModel cal_model) {
             Object (settings: clock_settings,
+                    can_focus: true,
                     hexpand: true,
                     model: cal_model);
         }
 
         construct {
+            provider = new Gtk.CssProvider ();
+            provider.load_from_resource ("/io/elementary/desktop/wingpanel/datetime/GridDay.css");
+
             inner_grid = new Gtk.Grid ();
             inner_grid.hexpand = true;
 
@@ -60,8 +66,6 @@ namespace DateTimeIndicator {
 
                 inner_grid.attach (header_labels[c], c + 2, 0);
             }
-
-            can_focus = true;
 
             var week_sep = new Gtk.Separator (Gtk.Orientation.VERTICAL);
             week_sep.margin_start = 9;
@@ -108,7 +112,6 @@ namespace DateTimeIndicator {
                                                                event.keyval == Gdk.keyval_from_name ("Up") ? -7 :
                                                                7);
                 var date_month = new_date.get_month () - selected_gridday.date.get_month ();
-
                 if (date_month != 0) {
                     ungrab_focus ();
                     change_month (date_month, new_date);
@@ -129,16 +132,16 @@ namespace DateTimeIndicator {
         }
 
         private bool on_day_focus_in (Gdk.EventFocus event) {
-            var day = inner_grid.get_focus_child ();
-            if (day == null && !(day is Widgets.CalendarDay)) {
+            var day = (Widgets.CalendarDay) inner_grid.get_focus_child ();
+            if (day == null) {
                 return false;
             }
 
             ungrab_focus ();
 
-            var selected_date = ((Widgets.CalendarDay) day).date;
-            selected_gridday = day as Widgets.CalendarDay;
-            ((Widgets.CalendarDay) day).set_selected (true);
+            selected_gridday = day;
+            var selected_date = selected_gridday.date;
+            selected_gridday.set_selected (true);
             day.set_state_flags (Gtk.StateFlags.FOCUSED, false);
             var date_month = selected_date.get_month () - model.month_start.get_month ();
 
@@ -159,7 +162,6 @@ namespace DateTimeIndicator {
 
         public void set_focus_to_day (GLib.DateTime d) {
             Widgets.CalendarDay? day = data[day_hash (d)];
-
             if (day == null) {
                 return;
             }
@@ -225,14 +227,13 @@ namespace DateTimeIndicator {
 
                 if (day == null) {
                     /* Still update_day to get the color of etc. right */
-                    day = new Widgets.CalendarDay (new_date);
+                    day = new Widgets.CalendarDay (new_date, provider);
                     day.on_event_add.connect ((date) => {
                         on_event_add (date);
                     });
                     day.focus_in_event.connect (on_day_focus_in);
 
                     inner_grid.attach (day, col + 2, row);
-                    day.show_all ();
                 }
 
                 update_day (day, new_date, month_start);
@@ -258,6 +259,8 @@ namespace DateTimeIndicator {
 
             data.clear ();
             data.set_all (data_new);
+
+            inner_grid.show_all ();
 
             grid_range = new_range;
             return current_today;

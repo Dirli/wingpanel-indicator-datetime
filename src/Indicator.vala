@@ -220,7 +220,7 @@ namespace DateTimeIndicator {
 #endif
 
         public override void opened () {
-            calendar.show_today ();
+            calendar.show_today (true);
 
             opened_widget = true;
         }

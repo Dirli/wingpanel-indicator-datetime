@@ -30,8 +30,7 @@ namespace DateTimeIndicator {
         public signal void on_event_add (GLib.DateTime date);
 
         public GLib.DateTime date { get; construct set; }
-
-        private static Gtk.CssProvider provider;
+        public Gtk.CssProvider provider { get; construct set; }
 
         private Gee.HashMap<string, Gee.ArrayList<string>> color_events;
         private Gee.HashMap<string, Gtk.Widget> dot_widgets;
@@ -40,50 +39,42 @@ namespace DateTimeIndicator {
         private Gtk.Label label;
         private bool valid_grab = false;
 
-        public CalendarDay (GLib.DateTime date) {
-            Object (date: date);
-        }
-
-        static construct {
-            provider = new Gtk.CssProvider ();
-            provider.load_from_resource ("/io/elementary/desktop/wingpanel/datetime/GridDay.css");
+        public CalendarDay (GLib.DateTime d, Gtk.CssProvider p) {
+            Object (can_focus: true,
+                    date: d,
+                    halign: Gtk.Align.CENTER,
+                    hexpand: true,
+                    provider: p);
         }
 
         construct {
-            label = new Gtk.Label (null);
-            // label.margin_top = 6;
+            label = new Gtk.Label (date.get_day_of_month ().to_string ());
 
             unowned Gtk.StyleContext label_style_context = label.get_style_context ();
             label_style_context.add_provider (provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
             label_style_context.add_class ("circular");
 
-            event_grid = new Gtk.Grid ();
-            event_grid.halign = Gtk.Align.CENTER;
-            event_grid.height_request = 6;
+            event_grid = new Gtk.Grid () {
+                halign = Gtk.Align.CENTER,
+                height_request = 6
+            };
 
-            var grid = new Gtk.Grid ();
-            grid.halign = grid.valign = Gtk.Align.CENTER;
+            var grid = new Gtk.Grid () {
+                halign = Gtk.Align.CENTER,
+                valign = Gtk.Align.CENTER
+            };
             grid.attach (label, 0, 0);
             grid.attach (event_grid, 0, 1);
 
-            can_focus = true;
             events |= Gdk.EventMask.BUTTON_PRESS_MASK;
 
             set_css_name ("grid-day");
-            halign = Gtk.Align.CENTER;
-            hexpand = true;
-
             get_style_context ().add_provider (provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
 
             add (grid);
-            show_all ();
 
             // Signals and handlers
             button_press_event.connect (on_button_press);
-
-            notify["date"].connect (() => {
-                label.label = date.get_day_of_month ().to_string ();
-            });
 
             dot_widgets = new Gee.HashMap<string, Gtk.Widget> ();
             color_providers = new Gee.HashMap<string, Gtk.CssProvider> ();

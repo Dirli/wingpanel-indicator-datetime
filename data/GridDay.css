@@ -2,25 +2,13 @@
     font-weight: bold;
 }
 
-/* .circular {
-    border-radius: 50%;
-} */
-
 grid:disabled .accent {
     color: @insensitive_color;
 }
 
-/* .circular:selected .accent {
-    color: @accent_color_500;
-} */
-
 grid-day {
     padding: 0.6em 0;
 }
-
-/* grid:disabled .accent {
-    color: @accent_color_500;
-} */
 
 grid-day label {
     margin-top: 0.2em;
