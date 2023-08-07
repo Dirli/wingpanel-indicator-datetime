@@ -24,9 +24,14 @@ gresource = gnome.compile_resources (
 wingpanel_dep = dependency ('wingpanel')
 wingpanel_indicatorsdir = wingpanel_dep.get_pkgconfig_variable ('indicatorsdir', define_variable: ['libdir', libdir])
 
-gweather_dep = dependency ('gweather-3.0')
-if gweather_dep.version () >= '40.0'
+gweather_dep = dependency ('gweather4', required: false)
+if gweather_dep.found ()
   add_project_arguments ('--define=GWEATHER_40', language: 'vala')
+else
+  gweather_dep = dependency ('gweather-3.0')
+  if gweather_dep.version () >= '40.0'
+    add_project_arguments ('--define=GWEATHER_40', language: 'vala')
+  endif
 endif
 
 deps = [
