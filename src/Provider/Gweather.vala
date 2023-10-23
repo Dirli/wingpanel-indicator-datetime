@@ -22,9 +22,13 @@ namespace DateTimeIndicator {
 
             gweather_info = new GWeather.Info (gweather_location);
 #if GWEATHER_40
+			gweather_info.set_application_id ("org.pantheon.weather");
             gweather_info.set_contact_info ("litandrej85@gmail.com");
+			gweather_info.set_enabled_providers (GWeather.Provider.METAR | GWeather.Provider.MET_NO | GWeather.Provider.OWM);
+#else
+			gweather_info.set_enabled_providers (GWeather.Provider.ALL);
 #endif
-            gweather_info.set_enabled_providers (GWeather.Provider.ALL);
+            
             gweather_info.updated.connect (parse_response);
         }
 
